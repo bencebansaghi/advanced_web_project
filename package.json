@@ -1,0 +1,25 @@
+{
+    "name": "advanced_web_project",
+    "version": "1.0.0",
+    "scripts": {
+      "test_frontend": "npm run test --prefix frontend",
+      "test_backend": "npm run test --prefix backend",
+      "test": "concurrently \"npm run test_frontend\" \"npm run test_backend\"",
+      "frontend": "npm start --prefix frontend",
+      "backend": "npm start --prefix backend",
+      "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+      "postinstall": "npm install --prefix frontend && npm install --prefix backend"
+
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+      "concurrently": "^9.1.2",
+      "cors": "^2.8.5"
+    },
+    "devDependencies": {
+      "@types/cors": "^2.8.17"
+    }
+  }
