@@ -9,7 +9,6 @@
       "backend": "npm start --prefix backend",
       "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
       "postinstall": "npm install --prefix frontend && npm install --prefix backend"
-
     },
     "keywords": [],
     "author": "",
