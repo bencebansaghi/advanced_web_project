@@ -834,7 +834,6 @@ describe("DELETE /column", () => {
     const response = await request(app)
       .delete("/column")
       .send({ column_id: "somecolumnid" });
-    console.log(response.body)
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Token not found");
   });
@@ -1067,5 +1066,719 @@ describe("DELETE /board", () => {
 
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("Access denied");
+  });
+});
+
+describe("PUT /card/modify", () => {
+  it("should update a card successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), title: "Updated Card" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("Updated Card");
+  });
+
+  it("should reorder cards within the same column", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card1 = await new Card({
+      columnID: column._id,
+      title: "Card 1",
+      description: "Description 1",
+      order: 0,
+    }).save();
+
+    const card2 = await new Card({
+      columnID: column._id,
+      title: "Card 2",
+      description: "Description 2",
+      order: 1,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card1._id?.toString(), order: 1 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.order).toBe(1);
+
+    const updatedCard2 = await Card.findById(card2._id);
+    expect(updatedCard2?.order).toBe(0);
+  });
+  it("should reorder cards when new order is higher", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card1 = await new Card({
+      columnID: column._id,
+      title: "Card 1",
+      description: "Description 1",
+      order: 0,
+    }).save();
+
+    const card2 = await new Card({
+      columnID: column._id,
+      title: "Card 2",
+      description: "Description 2",
+      order: 1,
+    }).save();
+
+    const card3 = await new Card({
+      columnID: column._id,
+      title: "Card 3",
+      description: "Description 3",
+      order: 2,
+    }).save();
+
+    const card4 = await new Card({
+      columnID: column._id,
+      title: "Card 4",
+      description: "Description 4",
+      order: 3,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card1._id?.toString(), order: 3 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.order).toBe(3);
+
+    const updatedCard2 = await Card.findById(card2._id);
+    const updatedCard3 = await Card.findById(card3._id);
+    const updatedCard4 = await Card.findById(card4._id);
+
+    expect(updatedCard2?.order).toBe(0);
+    expect(updatedCard3?.order).toBe(1);
+    expect(updatedCard4?.order).toBe(2);
+  });
+
+  it("should reorder cards when new order is lower", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card1 = await new Card({
+      columnID: column._id,
+      title: "Card 1",
+      description: "Description 1",
+      order: 0,
+    }).save();
+
+    const card2 = await new Card({
+      columnID: column._id,
+      title: "Card 2",
+      description: "Description 2",
+      order: 1,
+    }).save();
+
+    const card3 = await new Card({
+      columnID: column._id,
+      title: "Card 3",
+      description: "Description 3",
+      order: 2,
+    }).save();
+
+    const card4 = await new Card({
+      columnID: column._id,
+      title: "Card 4",
+      description: "Description 4",
+      order: 3,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card4._id?.toString(), order: 1 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.order).toBe(1);
+
+    const updatedCard1 = await Card.findById(card1._id);
+    const updatedCard2 = await Card.findById(card2._id);
+    const updatedCard3 = await Card.findById(card3._id);
+
+    expect(updatedCard1?.order).toBe(0);
+    expect(updatedCard2?.order).toBe(2);
+    expect(updatedCard3?.order).toBe(3);
+  });
+  it("should not update a card without token", async () => {
+    const response = await request(app)
+      .put("/card/modify")
+      .send({ card_id: "somecardid", title: "Updated Card" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not update a card with invalid token", async () => {
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({ card_id: "somecardid", title: "Updated Card" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not update a card without card_id", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Updated Card" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("card_id is required");
+  });
+
+  it("should not update a non-existent card", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: "nonexistentcardid", title: "Updated Card" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Card not found");
+  });
+
+  it("should not update a card if user has no access", async () => {
+    const user1 = await new User({
+      username: "user1",
+      email: "user1@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const user2 = await new User({
+      username: "user2",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user2._id,
+      title: "User2's Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "User2's Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "User2's Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), title: "Updated Card" });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should not update a card if nothing to modify", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString() });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Nothing to modify");
+  });
+  it("should let admin modify a card", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: normalUser._id,
+      title: "User's Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "User's Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "User's Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ card_id: card._id?.toString(), title: "Admin Updated Card" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("Admin Updated Card");
+  });
+});
+
+describe("PUT /card/move", () => {
+  it("should move a card to a different column successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column1 = await new Column({
+      boardID: board._id,
+      title: "Column 1",
+      order: 0,
+    }).save();
+
+    const column2 = await new Column({
+      boardID: board._id,
+      title: "Column 2",
+      order: 1,
+    }).save();
+
+    const card = await new Card({
+      columnID: column1._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+
+    expect(response.status).toBe(200);
+    expect(response.body.columnID).toBe(column2._id?.toString());
+  });
+
+  it("should not move a card without token", async () => {
+    const response = await request(app)
+      .put("/card/move")
+      .send({ card_id: "somecardid", column_id: "somecolumnid" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not move a card with invalid token", async () => {
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({ card_id: "somecardid", column_id: "somecolumnid" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not move a card without card_id or column_id", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ column_id: "somecolumnid" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("card_id and column_id are required");
+  });
+
+  it("should not move a non-existent card", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: "nonexistentcardid", column_id: "somecolumnid" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Card not found");
+  });
+
+  it("should not move a card to a non-existent column", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), column_id: "nonexistentcolumnid" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("New column not found");
+  });
+
+  it("should not move a card to a column in a different board", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board1 = await new Board({
+      userID: user._id,
+      title: "Board 1",
+    }).save();
+
+    const board2 = await new Board({
+      userID: user._id,
+      title: "Board 2",
+    }).save();
+
+    const column1 = await new Column({
+      boardID: board1._id,
+      title: "Column 1",
+      order: 0,
+    }).save();
+
+    const column2 = await new Column({
+      boardID: board2._id,
+      title: "Column 2",
+      order: 1,
+    }).save();
+
+    const card = await new Card({
+      columnID: column1._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("You can only move cards within the same board");
+  });
+
+  it("should not move a card if user has no access", async () => {
+    const user1 = await new User({
+      username: "user1",
+      email: "user1@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const user2 = await new User({
+      username: "user2",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user2._id,
+      title: "User2's Board",
+    }).save();
+
+    const column1 = await new Column({
+      boardID: board._id,
+      title: "Column 1",
+      order: 0,
+    }).save();
+
+    const column2 = await new Column({
+      boardID: board._id,
+      title: "Column 2",
+      order: 1,
+    }).save();
+
+    const card = await new Card({
+      columnID: column1._id,
+      title: "User2's Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should let admin move a card to a different column", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: normalUser._id,
+      title: "User's Board",
+    }).save();
+
+    const column1 = await new Column({
+      boardID: board._id,
+      title: "Column 1",
+      order: 0,
+    }).save();
+
+    const column2 = await new Column({
+      boardID: board._id,
+      title: "Column 2",
+      order: 1,
+    }).save();
+
+    const card = await new Card({
+      columnID: column1._id,
+      title: "User's Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/move")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+
+    expect(response.status).toBe(200);
+    expect(response.body.columnID).toBe(column2._id?.toString());
   });
 });
