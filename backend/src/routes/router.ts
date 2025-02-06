@@ -1,9 +1,14 @@
-import { Request, Response, Router } from "express";
+import express from "express";
+import columnRouter from "./columnRoutes";
+import cardRouter from "./cardRoutes";
+import boardRouter from "./boardRoutes";
+import userRouter from "./userRoutes";
 
-const router: Router = Router();
+const router = express.Router();
 
-router.get("/", (req: Request, res: Response) => {
-  res.status(200).send("Hello, world!");
-});
+router.use("/user", userRouter)
+router.use("/column", columnRouter);
+router.use("/card", cardRouter);
+router.use("/board", boardRouter);
 
 export default router;
