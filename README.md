@@ -87,5 +87,5 @@ Alternatively, you can manually install dependencies and start the servers:
 ## AI Usage during the project
 
 - ChatGPT for setup
-- Github Copilot for generating documentation
-- Github Copilot Edits for bug discovery/fixing
+- Github Copilot for generating documentation such as ReadME files
+- Github Copilot Edits for generating test cases in the backend
