@@ -1,39 +1,48 @@
 import request from "supertest";
-import { app, db } from "./index";
+import app from "./app";
 import { User } from "./src/models/User";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Board } from "./src/models/Board";
-import dotenv from "dotenv";
 import { Column } from "./src/models/Column";
 import { Card } from "./src/models/Card";
-dotenv.config();
-process.env.MONGODB_URL = 'mongodb://127.0.0.1:27017/db_for_test';
-process.env.PORT = '3001';
-process.env.JWT_SECRET = 'test';
-
+import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+let mongoServer: MongoMemoryServer;
+  
 beforeAll(async () => {
-  await db.dropDatabase();
-});
-
-beforeEach(async () => {
-  await db.dropDatabase();
-});
-
-afterEach(async () => {
-  await db.dropDatabase();
+  mongoServer = await MongoMemoryServer.create();
+  const uri = mongoServer.getUri();
+  await mongoose.connect(uri);
 });
 
 afterAll(async () => {
-  await db.close();
+  await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
+beforeEach(async () => {
+  await Card.deleteMany({});
+  await Column.deleteMany({});
+  await Board.deleteMany({});
+  await User.deleteMany({});
+});
 it("should respond with a 404 status code for an unknown path", async () => {
   const response = await request(app).get("/unknown");
   expect(response.statusCode).toBe(404);
 });
 
 describe("POST /user/register", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should handle user registration", async () => {
     const response = await request(app)
       .post("/user/register")
@@ -155,6 +164,16 @@ describe("POST /user/register", () => {
 });
 
 describe("POST /user/login", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should not login a user with incorrect email", async () => {
     const response = await request(app)
       .post("/user/login")
@@ -236,6 +255,16 @@ describe("POST /user/login", () => {
 });
 
 describe("GET /board/", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should fetch boards for a user", async () => {
     const user = await new User({
       username: "testuser",
@@ -366,6 +395,16 @@ describe("GET /board/", () => {
 });
 
 describe("GET /column/", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should fetch columns for a board", async () => {
     const user = await new User({
       username: "testuser",
@@ -506,6 +545,16 @@ describe("GET /column/", () => {
 });
 
 describe("GET /card/by_column", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should fetch cards for a column", async () => {
     const user = await new User({
       username: "testuser",
@@ -667,6 +716,16 @@ describe("GET /card/by_column", () => {
 });
 
 describe("DELETE /card", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should delete a card successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -813,6 +872,16 @@ describe("DELETE /card", () => {
 });
 
 describe("DELETE /column", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should delete a column and its associated cards successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -957,6 +1026,16 @@ describe("DELETE /column", () => {
 });
 
 describe("DELETE /board", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should delete a board and its associated columns and cards successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -1098,6 +1177,16 @@ describe("DELETE /board", () => {
 });
 
 describe("PUT /card/modify", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should update a card successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -1590,6 +1679,16 @@ describe("PUT /card/modify", () => {
 });
 
 describe("PUT /card/move", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should move a card to a different column successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -1890,6 +1989,16 @@ describe("PUT /card/move", () => {
 });
 
 describe("POST /card", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should add a card successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -2171,6 +2280,16 @@ describe("POST /card", () => {
 });
 
 describe("PUT /column/modify", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should update a column successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -2416,6 +2535,16 @@ describe("PUT /column/modify", () => {
 });
 
 describe("POST /column", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should create a new column successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -2595,6 +2724,16 @@ describe("POST /column", () => {
   });
 });
 describe("POST /board", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should create a new board successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -2710,6 +2849,16 @@ describe("POST /board", () => {
   });
 });
 describe("PUT /board", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should update a board's title successfully", async () => {
     const user = await new User({
       username: "testuser",
@@ -2864,6 +3013,16 @@ describe("PUT /board", () => {
 });
 
 describe("GET /user/all", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should fetch all users for admin", async () => {
     const adminUser = await new User({
       username: "admin",
@@ -2951,6 +3110,16 @@ describe("GET /user/all", () => {
 });
 
 describe("GET /user", () => {
+  let mongoServer: MongoMemoryServer;
+  
+  
+
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
   it("should fetch own user info", async () => {
     const normalUser = await new User({
       username: "user",

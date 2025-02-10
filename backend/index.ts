@@ -1,39 +1,11 @@
-import express, { Express } from "express";
-import path from "path";
-import router from "./src/routes/router";
-import morgan from "morgan";
-import cors from "cors";
+import app from "./app";
 import mongoose, { Connection } from "mongoose";
-import dotenv from "dotenv";
+import config from './config';
 
-dotenv.config();
-
-const app: Express = express();
-const port = Number(process.env.PORT) || 3000;
-
-const mongoDB: string =
-  process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/testdb";
-mongoose.connect(mongoDB);
-mongoose.Promise = Promise;
-const db: Connection = mongoose.connection;
-db.on("error", console.error.bind(console, "MongoDB connection error"));
-db.once("open", () => {
-  console.log("MongoDB connected successfully");
-});
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(morgan("dev"));
-
-app.use(express.static(path.join(__dirname, "../public")));
-app.use("/", router);
-
-export { app, db };
-
-// for tests
-if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
-}
+mongoose.connect(config.mongoUri)
+    .then(() => {
+        app.listen(config.port, () => {  // The app.listen() call is here
+            console.log(`Server listening on port ${config.port} in ${config.env} mode`);
+        });
+    })
+    .catch((err) => console.error('MongoDB connection error:', err));
