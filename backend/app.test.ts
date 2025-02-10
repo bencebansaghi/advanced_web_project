@@ -34,35 +34,34 @@ it("should respond with a 404 status code for an unknown path", async () => {
 });
 
 describe("POST /user/register", () => {
-it("should handle user registration", async () => {
-  const response = await request(app)
-    .post("/user/register")
-    .send({
-      username: "testuser",
-      email: "testuser@example.com",
-      password: "Password123!",
-    });
-  expect(response.status).toBe(201);
-});
+  it("should handle user registration", async () => {
+    const response = await request(app)
+      .post("/user/register")
+      .send({
+        username: "testuser",
+        email: "testuser@example.com",
+        password: "Password123!",
+      });
+    expect(response.status).toBe(201);
+  });
 
-it("should not register a user with an existing email", async () => {
-  await new User({
-    username: "existinguser",
-    email: "existinguser@example.com",
-    password: "Password123!",
-  }).save();
-
-  const response = await request(app)
-    .post("/user/register")
-    .send({
-      username: "newuser",
+  it("should not register a user with an existing email", async () => {
+    await new User({
+      username: "existinguser",
       email: "existinguser@example.com",
-      password: "Password123!",
-    });
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
 
-  expect(response.status).toBe(403);
-  expect(response.body.error).toBe("Email already in use");
-  await User.deleteOne({ email: "existinguser@example.com" });
+    const response = await request(app)
+      .post("/user/register")
+      .send({
+        username: "newuser",
+        email: "existinguser@example.com",
+        password: "Password123!",
+      });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Email already in use");
   });
 
   it("should not register a user with an invalid email", async () => {
@@ -76,7 +75,7 @@ it("should not register a user with an existing email", async () => {
     expect(response.status).toBe(400);
     expect(response.body.error[0].msg).toBe("Please enter a valid email address");
   });
-  
+
   it("should not register a user with a short password", async () => {
     const response = await request(app)
       .post("/user/register")
@@ -88,7 +87,7 @@ it("should not register a user with an existing email", async () => {
     expect(response.status).toBe(400);
     expect(response.body.error[0].msg).toBe("Password must be at least 8 characters long");
   });
-  
+
   it("should not register a user with a password missing an uppercase letter", async () => {
     const response = await request(app)
       .post("/user/register")
@@ -100,7 +99,7 @@ it("should not register a user with an existing email", async () => {
     expect(response.status).toBe(400);
     expect(response.body.error[0].msg).toBe("Password must contain at least one uppercase letter");
   });
-  
+
   it("should not register a user with a password missing a number", async () => {
     const response = await request(app)
       .post("/user/register")
@@ -112,7 +111,7 @@ it("should not register a user with an existing email", async () => {
     expect(response.status).toBe(400);
     expect(response.body.error[0].msg).toBe("Password must contain at least one number");
   });
-  
+
   it("should not register a user with a password missing a special character", async () => {
     const response = await request(app)
       .post("/user/register")
@@ -123,6 +122,36 @@ it("should not register a user with an existing email", async () => {
       });
     expect(response.status).toBe(400);
     expect(response.body.error[0].msg).toBe("Password must contain at least one special character");
+  });
+
+  it("should not register a user with incorrect admin password", async () => {
+    const response = await request(app)
+      .post("/user/register")
+      .send({
+        username: "adminuser",
+        email: "badadminuser@example.com",
+        password: "Password123!",
+        adminPass: "wrongAdminPass",
+      });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Incorrect admin password");
+  });
+
+  it("should register a user as admin with correct admin password", async () => {
+    process.env.ADMIN_PASS = bcrypt.hashSync("correctAdminPass", bcrypt.genSaltSync(10));
+    const response = await request(app)
+      .post("/user/register")
+      .send({
+        username: "adminuser",
+        email: "adminuser@example.com",
+        password: "Password123!",
+        adminPass: "correctAdminPass",
+      });
+      console.log(response.error)
+    expect(response.status).toBe(201);
+
+    const adminUser = await User.findOne({ email: "adminuser@example.com" });
+    expect(adminUser?.isAdmin).toBe(true);
   });
 });
 
@@ -207,7 +236,7 @@ describe("POST /user/login", () => {
   });
 });
 
-describe("GET /board/by_user", () => {
+describe("GET /board/", () => {
   it("should fetch boards for a user", async () => {
     const user = await new User({
       username: "testuser",
@@ -226,9 +255,9 @@ describe("GET /board/by_user", () => {
     }).save();
   
     const response = await request(app)
-      .get("/board/by_user")
+      .get("/board/")
       .set("Authorization", `Bearer ${token}`)
-      .send({email: user.email});
+      .query({ email: user.email });
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
     expect(response.body[0].title).toBe("Test Board");
@@ -247,9 +276,9 @@ describe("GET /board/by_user", () => {
     );
   
     const response = await request(app)
-      .get("/board/by_user")
+      .get("/board/")
       .set("Authorization", `Bearer ${token}`)
-      .send({email: user.email});
+      .query({ email: user.email });
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("No boards found");
 
@@ -257,7 +286,7 @@ describe("GET /board/by_user", () => {
   
   it("should not fetch boards for a user with invalid token", async () => {
     const response = await request(app)
-      .get("/board/by_user")
+      .get("/board/")
       .set("Authorization", "Bearer invalidtoken");
   
     expect(response.status).toBe(401);
@@ -265,7 +294,7 @@ describe("GET /board/by_user", () => {
   });
   
   it("should not fetch boards for a user without token", async () => {
-    const response = await request(app).get("/board/by_user");
+    const response = await request(app).get("/board/");
   
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Token not found");
@@ -295,9 +324,9 @@ describe("GET /board/by_user", () => {
     }).save();
 
     const response = await request(app)
-      .get("/board/by_user")
+      .get("/board/")
       .set("Authorization", `Bearer ${token}`)
-      .send({email: user2.email});
+      .query({ email: user2.email });
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("Access denied");
   });
@@ -327,9 +356,9 @@ describe("GET /board/by_user", () => {
     }).save();
 
     const response = await request(app)
-      .get("/board/by_user")
+      .get("/board/")
       .set("Authorization", `Bearer ${adminToken}`)
-      .send({email: normalUser.email});
+      .query({ email: normalUser.email });
 
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
@@ -337,7 +366,7 @@ describe("GET /board/by_user", () => {
   });
 });
 
-describe("GET /column/by_board", () => {
+describe("GET /column/", () => {
   it("should fetch columns for a board", async () => {
     const user = await new User({
       username: "testuser",
@@ -362,7 +391,7 @@ describe("GET /column/by_board", () => {
     );
 
     const response = await request(app)
-      .get("/column/by_board")
+      .get("/column/")
       .set("Authorization", `Bearer ${token}`)
       .query({ board_id: board._id?.toString() });
     expect(response.status).toBe(200);
@@ -383,7 +412,7 @@ describe("GET /column/by_board", () => {
     );
 
     const response = await request(app)
-      .get("/column/by_board")
+      .get("/column/")
       .set("Authorization", `Bearer ${token}`)
       .query({ board_id: "nonexistentboardid" });
 
@@ -393,7 +422,7 @@ describe("GET /column/by_board", () => {
 
   it("should not fetch columns for a board without token", async () => {
     const response = await request(app)
-      .get("/column/by_board")
+      .get("/column/")
       .query({ board_id: "someboardid" });
 
     expect(response.status).toBe(401);
@@ -413,7 +442,7 @@ describe("GET /column/by_board", () => {
     );
 
     const response = await request(app)
-      .get("/column/by_board")
+      .get("/column/")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(400);
@@ -444,7 +473,7 @@ describe("GET /column/by_board", () => {
     );
 
     const response = await request(app)
-      .get("/column/by_board")
+      .get("/column/")
       .set("Authorization", `Bearer ${token}`)
       .query({ board_id: board._id?.toString() });
     expect(response.status).toBe(403);
@@ -469,7 +498,7 @@ describe("GET /column/by_board", () => {
     );
 
     const response = await request(app)
-      .get("/column/by_board")
+      .get("/column/")
       .set("Authorization", `Bearer ${token}`)
       .query({ board_id: board._id?.toString() });
     expect(response.status).toBe(404);
@@ -1481,6 +1510,84 @@ describe("PUT /card/modify", () => {
     expect(response.status).toBe(200);
     expect(response.body.title).toBe("Admin Updated Card");
   });
+
+  it("should update a card with a valid color", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), color: "#FF5733" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.color).toBe("#FF5733");
+  });
+
+  it("should not update a card with an invalid color", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const card = await new Card({
+      columnID: column._id,
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/card/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ card_id: card._id?.toString(), color: "invalidcolor" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.color).toBe('#D3D3D3')
+  });
 });
 
 describe("PUT /card/move", () => {
@@ -1780,5 +1887,1104 @@ describe("PUT /card/move", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.columnID).toBe(column2._id?.toString());
+  });
+});
+
+describe("POST /card", () => {
+  it("should add a card successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        column_id: column._id?.toString(),
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.card.title).toBe("Test Card");
+  });
+
+  it("should not add a card without token", async () => {
+    const response = await request(app)
+      .post("/card")
+      .send({
+        column_id: "somecolumnid",
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not add a card with invalid token", async () => {
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({
+        column_id: "somecolumnid",
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not add a card without required fields", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        title: "Test Card",
+        description: "Test Description",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("column_id, title, description, and order are required");
+  });
+
+  it("should not add a card to a non-existent column", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        column_id: "nonexistentcolumnid",
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Column not found");
+  });
+
+  it("should not add a card if user has no access", async () => {
+    const user1 = await new User({
+      username: "user1",
+      email: "user1@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const user2 = await new User({
+      username: "user2",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user2._id,
+      title: "User2's Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "User2's Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        column_id: column._id?.toString(),
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+      });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should add a card with a valid color", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        column_id: column._id?.toString(),
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+        color: "#FF5733",
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.card.color).toBe("#FF5733");
+  });
+
+  it("should add a card without color if color format is invalid", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        column_id: column._id?.toString(),
+        title: "Test Card",
+        description: "Test Description",
+        order: 0,
+        color: "invalidcolor",
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.warning).toBe("Invalid color format. Card created without color.");
+  });
+
+  it("should let admin add a card to any column", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: normalUser._id,
+      title: "User's Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "User's Column",
+      order: 0,
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/card")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        column_id: column._id?.toString(),
+        title: "Admin Card",
+        description: "Admin Description",
+        order: 0,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.card.title).toBe("Admin Card");
+  });
+});
+
+describe("PUT /column/modify", () => {
+  it("should update a column successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ column_id: column._id?.toString(), title: "Updated Column" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("Updated Column");
+  });
+
+  it("should reorder columns within the same board", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column1 = await new Column({
+      boardID: board._id,
+      title: "Column 1",
+      order: 0,
+    }).save();
+
+    const column2 = await new Column({
+      boardID: board._id,
+      title: "Column 2",
+      order: 1,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ column_id: column1._id?.toString(), order: 1 });
+
+    expect(response.status).toBe(200);
+    expect(response.body.order).toBe(1);
+
+    const updatedColumn2 = await Column.findById(column2._id);
+    expect(updatedColumn2?.order).toBe(0);
+  });
+
+  it("should not update a column without token", async () => {
+    const response = await request(app)
+      .put("/column/modify")
+      .send({ column_id: "somecolumnid", title: "Updated Column" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not update a column with invalid token", async () => {
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({ column_id: "somecolumnid", title: "Updated Column" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not update a column without column_id", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Updated Column" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("column_id is required");
+  });
+
+  it("should not update a non-existent column", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ column_id: "nonexistentcolumnid", title: "Updated Column" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Column not found");
+  });
+
+  it("should not update a column if user has no access", async () => {
+    const user1 = await new User({
+      username: "user1",
+      email: "user1@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const user2 = await new User({
+      username: "user2",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user2._id,
+      title: "User2's Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "User2's Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ column_id: column._id?.toString(), title: "Updated Column" });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should not update a column if nothing to modify", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "Test Column",
+      order: 0,
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ column_id: column._id?.toString() });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Nothing to modify");
+  });
+
+  it("should let admin modify a column", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: normalUser._id,
+      title: "User's Board",
+    }).save();
+
+    const column = await new Column({
+      boardID: board._id,
+      title: "User's Column",
+      order: 0,
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/column/modify")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ column_id: column._id?.toString(), title: "Admin Updated Column" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("Admin Updated Column");
+  });
+});
+
+describe("POST /column", () => {
+  it("should create a new column successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Test Board",
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/column")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        board_id: board._id?.toString(),
+        title: "Test Column",
+        order: 0,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.title).toBe("Test Column");
+  });
+
+  it("should not create a column without token", async () => {
+    const response = await request(app)
+      .post("/column")
+      .send({
+        board_id: "someboardid",
+        title: "Test Column",
+        order: 0,
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not create a column with invalid token", async () => {
+    const response = await request(app)
+      .post("/column")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({
+        board_id: "someboardid",
+        title: "Test Column",
+        order: 0,
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not create a column without required fields", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/column")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        title: "Test Column",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("board_id and title are required");
+  });
+
+  it("should not create a column for a non-existent board", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/column")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        board_id: "nonexistentboardid",
+        title: "Test Column",
+        order: 0,
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Board not found");
+  });
+
+  it("should not create a column if user has no access", async () => {
+    const user1 = await new User({
+      username: "user1",
+      email: "user1@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const user2 = await new User({
+      username: "user2",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user2._id,
+      title: "User2's Board",
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/column")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        board_id: board._id?.toString(),
+        title: "Test Column",
+        order: 0,
+      });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should let admin create a column for any board", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: normalUser._id,
+      title: "User's Board",
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/column")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        board_id: board._id?.toString(),
+        title: "Admin Column",
+        order: 0,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.title).toBe("Admin Column");
+  });
+});
+describe("POST /board", () => {
+  it("should create a new board successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        title: "Test Board",
+      });
+    expect(response.status).toBe(201);
+    expect(response.body.title).toBe("Test Board");
+  });
+
+  it("should not create a board without token", async () => {
+    const response = await request(app)
+      .post("/board")
+      .send({
+        title: "Test Board",
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not create a board with invalid token", async () => {
+    const response = await request(app)
+      .post("/board")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({
+        title: "Test Board",
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not create a board without title", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Title is required");
+  });
+
+  it("should not create a board for a non-existent user", async () => {
+    const token = jwt.sign(
+      { _id: "nonexistentuserid", username: "testuser", email: "testuser@example.com", isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        title: "Test Board",
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("User not found");
+  });
+
+  it("should let admin create a board for any user", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .post("/board")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        title: "Admin Created Board",
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.title).toBe("Admin Created Board");
+  });
+});
+describe("PUT /board", () => {
+  it("should update a board's title successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user._id,
+      title: "Old Title",
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ board_id: board._id?.toString(), title: "New Title" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("New Title");
+  });
+
+  it("should not update a board without token", async () => {
+    const response = await request(app)
+      .put("/board")
+      .send({ board_id: "someboardid", title: "New Title" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not update a board with invalid token", async () => {
+    const response = await request(app)
+      .put("/board")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({ board_id: "someboardid", title: "New Title" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not update a board without board_id or title", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "New Title" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("board_id and title are required");
+  });
+
+  it("should not update a non-existent board", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ board_id: "nonexistentboardid", title: "New Title" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Board not found");
+  });
+
+  it("should not update a board if user has no access", async () => {
+    const user1 = await new User({
+      username: "user1",
+      email: "user1@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const user2 = await new User({
+      username: "user2",
+      email: "user2@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: user2._id,
+      title: "User2's Board",
+    }).save();
+
+    const token = jwt.sign(
+      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/board")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ board_id: board._id?.toString(), title: "New Title" });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should let admin update any board's title", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const board = await new Board({
+      userID: normalUser._id,
+      title: "User's Board",
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/board")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ board_id: board._id?.toString(), title: "Admin Updated Title" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("Admin Updated Title");
+  });
+});
+
+describe("GET /user/all", () => {
+  it("should fetch all users for admin", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .get("/user/all")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.users[0]).toBeDefined();
+  });
+
+  it("should not fetch users without token", async () => {
+    const response = await request(app).get("/user/all");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not fetch users with invalid token", async () => {
+    const response = await request(app)
+      .get("/user/all")
+      .set("Authorization", "Bearer invalidtoken");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not fetch users for non-admin user", async () => {
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const userToken = jwt.sign(
+      { _id: normalUser._id, username: normalUser.username, email: normalUser.email, isAdmin: normalUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .get("/user/all")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe("Access denied");
+  });
+
+  it("should return 404 if no users found", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    await User.deleteOne({email: adminUser.email})
+
+    const adminToken = jwt.sign(
+      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .get("/user/all")
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("No users found");
+  });
+});
+
+describe("GET /user", () => {
+  it("should fetch own user info", async () => {
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const userToken = jwt.sign(
+      { _id: normalUser._id, username: normalUser.username, email: normalUser.email, isAdmin: normalUser.isAdmin },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .get("/user")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.user.email).toBe(normalUser.email);
+  });
+
+  it("should not fetch user info without token", async () => {
+    const response = await request(app).get("/user");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not fetch user info with invalid token", async () => {
+    const response = await request(app)
+      .get("/user")
+      .set("Authorization", "Bearer invalidtoken");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
   });
 });

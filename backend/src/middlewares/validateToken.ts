@@ -17,6 +17,7 @@ export const validateUserToken = (req: CustomRequest, res: Response, next: NextF
     try {
         const verified: JwtPayload = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
         req.user = verified;
+        req.user.id = verified._id; // I have no clue why, but if this is not done sometimes it throws a tantrum
         next();
     } catch (error: any) {
         res.status(401).json({ error: "Access denied, bad token" });
