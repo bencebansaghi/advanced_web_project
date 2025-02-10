@@ -147,7 +147,6 @@ describe("POST /user/register", () => {
         password: "Password123!",
         adminPass: "correctAdminPass",
       });
-      console.log(response.error)
     expect(response.status).toBe(201);
 
     const adminUser = await User.findOne({ email: "adminuser@example.com" });

@@ -6,7 +6,7 @@ import userRouter from "./userRoutes";
 
 const router = express.Router();
 
-router.use("/user", userRouter)
+router.use("/user", userRouter);
 router.use("/column", columnRouter);
 router.use("/card", cardRouter);
 router.use("/board", boardRouter);

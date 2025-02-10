@@ -1,19 +1,17 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { Request, Response, Router, NextFunction } from "express";
+import { Response, Router, NextFunction } from "express";
 
-dotenv.config()
+dotenv.config();
 
-import { IUser, User } from "../models/User";
-import { IColumn, Column } from "../models/Column";
-import { ICard, Card } from "../models/Card";
-import { IBoard, Board } from "../models/Board";
-import validateUserLogin from "../middlewares/validateLogin";
-import validateUserRegister from "../middlewares/validateRegister";
-import { validateUserToken, validateAdmin, CustomRequest, checkAccess } from "../middlewares/validateToken";
-import { errorHandler } from "../middlewares/errorHandler";
-import mongoose from "mongoose";
+import { User } from "../models/User";
+import { Column } from "../models/Column";
+import { Card } from "../models/Card";
+import { Board } from "../models/Board";
+import {
+  validateUserToken,
+  CustomRequest,
+  checkAccess,
+} from "../middlewares/validateToken";
 
 const columnRouter: Router = Router();
 
@@ -50,7 +48,6 @@ columnRouter.get(
     res.status(200).json(columns);
   }
 );
-  
 
 // Route to delete a column and its associated cards
 // Required in request headers: { Authorization: Bearer <token> }
@@ -85,7 +82,9 @@ columnRouter.delete(
         res.status(404).json({ error: "Column not found" });
         return;
       }
-      res.status(200).json({ message: "Column and associated cards deleted successfully" });
+      res
+        .status(200)
+        .json({ message: "Column and associated cards deleted successfully" });
     } catch (error) {
       console.error("Error deleting column and cards:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -135,12 +134,18 @@ columnRouter.put(
         for (const otherColumn of columns) {
           if (otherColumn._id?.toString() !== column_id) {
             if (column.order < order) {
-              if (otherColumn.order >= column.order && otherColumn.order <= order) {
+              if (
+                otherColumn.order >= column.order &&
+                otherColumn.order <= order
+              ) {
                 otherColumn.order -= 1;
               }
             }
             if (column.order > order) {
-              if (otherColumn.order <= column.order && otherColumn.order >= order) {
+              if (
+                otherColumn.order <= column.order &&
+                otherColumn.order >= order
+              ) {
                 otherColumn.order += 1;
               }
             }

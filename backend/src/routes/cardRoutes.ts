@@ -1,36 +1,35 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { Request, Response, Router, NextFunction } from "express";
+import { Response, Router, NextFunction } from "express";
 
-dotenv.config()
+dotenv.config();
 
-import { IUser, User } from "../models/User";
-import { IColumn, Column } from "../models/Column";
+import { User } from "../models/User";
+import { Column } from "../models/Column";
 import { ICard, Card } from "../models/Card";
-import { IBoard, Board } from "../models/Board";
-import validateUserLogin from "../middlewares/validateLogin";
-import validateUserRegister from "../middlewares/validateRegister";
-import { validateUserToken, validateAdmin, CustomRequest, checkAccess } from "../middlewares/validateToken";
-import { errorHandler } from "../middlewares/errorHandler";
-import mongoose from "mongoose";
-import { col } from "sequelize";
+import { Board } from "../models/Board";
+import {
+  validateUserToken,
+  CustomRequest,
+  checkAccess,
+} from "../middlewares/validateToken";
 
 const cardRouter: Router = Router();
 
-function isHexColor (hex:string) {
-  return typeof hex === 'string'
-      && hex.length === 7
-      && hex[0] === '#'
-      && !isNaN(Number('0x' + hex.slice(1)))
+function isHexColor(hex: string) {
+  return (
+    typeof hex === "string" &&
+    hex.length === 7 &&
+    hex[0] === "#" &&
+    !isNaN(Number("0x" + hex.slice(1)))
+  );
 }
 
 // Route to get a cards by column
 // Required in request headers: { Authorization: Bearer <token> }
 // Required in request query: { column_id }
 cardRouter.get(
-    "/by_column",
-    validateUserToken,
+  "/by_column",
+  validateUserToken,
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     if (!req.query.column_id) {
       res.status(400).json({ error: "column_id is required" });
@@ -58,7 +57,6 @@ cardRouter.get(
     res.status(200).json(cards);
   }
 );
-  
 
 // Route to delete a card
 // Required in request headers: { Authorization: Bearer <token> }
@@ -104,84 +102,84 @@ cardRouter.delete(
 // Required in request headers: { Authorization: Bearer <token> }
 // Required in request body: { card_id, title (optional), color (optional), description (optional), order (optional) }
 cardRouter.put(
-    "/modify",
-    validateUserToken,
-    async (req: CustomRequest, res: Response, next: NextFunction) => {
-      const { card_id, title, color, description, order } = req.body;
-        if (!title && !color && !description && !order) {
-            res.status(400).json({ error: "Nothing to modify" });
-            return;
-        }
-        if (!card_id) {
-            res.status(400).json({ error: "card_id is required" });
-            return;
-        }
-        const card = await Card.findById(card_id).catch(() => null);
-
-        if (!card) {
-            res.status(404).json({ error: "Card not found" });
-            return;
-        }
-
-        const column = await Column.findById(card.columnID);
-        const board = await Board.findById(column?.boardID);
-        const user = await User.findById(board?.userID);
-        req.body.email = user?.email;
-        next();
-    },
-    checkAccess,
-    async (req: CustomRequest, res: Response) => {
-        var correctColor = true
-        const { card_id, title, color, description, order } = req.body;
-        try {
-            const card = await Card.findById(card_id);
-            if (!card) {
-                res.status(404).json({ error: "Card not found" });
-                return;
-            }
-            if (order !== undefined && order !== card.order) {
-                const cards = await Card.find({ columnID: card.columnID });
-                for (const otherCard of cards) {
-                    if (otherCard._id?.toString() !== card_id) {
-                      if (card.order < order){
-                        if (otherCard.order >= card.order && otherCard.order <= order){
-                          otherCard.order-=1
-                        }
-                      }
-                      if (card.order > order){
-                        if (otherCard.order <= card.order && otherCard.order >= order){
-                          otherCard.order+=1
-                        }
-                      }
-                        await otherCard.save();
-                    }
-                }
-            }
-            isHexColor(color)? correctColor=true : correctColor=false
-            var updatedCard: ICard | null
-            if (correctColor){
-              updatedCard = await Card.findByIdAndUpdate(
-                  card_id,
-                  { title, description, color, order },
-                  { new: true, runValidators: true }
-              );
-            } else {
-              updatedCard = await Card.findByIdAndUpdate(
-                card_id,
-                { title, description, order },
-                { new: true, runValidators: true }
-              );
-            }
-            if (!updatedCard) {
-                res.status(404).json({ error: "Card not found" });
-                return;
-            }
-            res.status(200).json(updatedCard);
-        } catch (error) {
-            console.error("Error updating card:", error);
-            res.status(500).json({ error: "Internal server error" });
-        }
+  "/modify",
+  validateUserToken,
+  async (req: CustomRequest, res: Response, next: NextFunction) => {
+    const { card_id, title, color, description, order } = req.body;
+    if (!title && !color && !description && !order) {
+      res.status(400).json({ error: "Nothing to modify" });
+      return;
     }
+    if (!card_id) {
+      res.status(400).json({ error: "card_id is required" });
+      return;
+    }
+    const card = await Card.findById(card_id).catch(() => null);
+
+    if (!card) {
+      res.status(404).json({ error: "Card not found" });
+      return;
+    }
+
+    const column = await Column.findById(card.columnID);
+    const board = await Board.findById(column?.boardID);
+    const user = await User.findById(board?.userID);
+    req.body.email = user?.email;
+    next();
+  },
+  checkAccess,
+  async (req: CustomRequest, res: Response) => {
+    var correctColor = true;
+    const { card_id, title, color, description, order } = req.body;
+    try {
+      const card = await Card.findById(card_id);
+      if (!card) {
+        res.status(404).json({ error: "Card not found" });
+        return;
+      }
+      if (order !== undefined && order !== card.order) {
+        const cards = await Card.find({ columnID: card.columnID });
+        for (const otherCard of cards) {
+          if (otherCard._id?.toString() !== card_id) {
+            if (card.order < order) {
+              if (otherCard.order >= card.order && otherCard.order <= order) {
+                otherCard.order -= 1;
+              }
+            }
+            if (card.order > order) {
+              if (otherCard.order <= card.order && otherCard.order >= order) {
+                otherCard.order += 1;
+              }
+            }
+            await otherCard.save();
+          }
+        }
+      }
+      isHexColor(color) ? (correctColor = true) : (correctColor = false);
+      var updatedCard: ICard | null;
+      if (correctColor) {
+        updatedCard = await Card.findByIdAndUpdate(
+          card_id,
+          { title, description, color, order },
+          { new: true, runValidators: true }
+        );
+      } else {
+        updatedCard = await Card.findByIdAndUpdate(
+          card_id,
+          { title, description, order },
+          { new: true, runValidators: true }
+        );
+      }
+      if (!updatedCard) {
+        res.status(404).json({ error: "Card not found" });
+        return;
+      }
+      res.status(200).json(updatedCard);
+    } catch (error) {
+      console.error("Error updating card:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 );
 
 // Route to move a card to a different column
@@ -214,8 +212,10 @@ cardRouter.put(
     }
 
     if (!oldColumn.boardID.equals(newColumn.boardID)) {
-      res.status(404).json({ error: "You can only move cards within the same board"})
-      return
+      res
+        .status(404)
+        .json({ error: "You can only move cards within the same board" });
+      return;
     }
 
     const board = await Board.findById(newColumn.boardID);
@@ -247,12 +247,17 @@ cardRouter.put(
 // Route to add a card
 // Required in request headers: { Authorization: Bearer <token> }
 // Required in request body: { column_id, title, description, color (optional), order }
-cardRouter.post("/",
+cardRouter.post(
+  "/",
   validateUserToken,
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     const { column_id, title, description, order } = req.body;
     if (!column_id || !title || !description || order === undefined) {
-      res.status(400).json({ error: "column_id, title, description, and order are required" });
+      res
+        .status(400)
+        .json({
+          error: "column_id, title, description, and order are required",
+        });
       return;
     }
 
