@@ -6,10 +6,10 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Board } from "./src/models/Board";
 import { Column } from "./src/models/Column";
 import { Card } from "./src/models/Card";
-import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
 let mongoServer: MongoMemoryServer;
-  
+
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
@@ -21,6 +21,8 @@ afterAll(async () => {
   await mongoServer.stop();
 });
 
+// Might be redundant, but I finally got the tests to work so I can't be bothered
+// If any future recruiters stumble upon this I swear I'm usually not this lazy (hire me pls)
 beforeEach(async () => {
   await Card.deleteMany({});
   await Column.deleteMany({});
@@ -33,10 +35,6 @@ it("should respond with a 404 status code for an unknown path", async () => {
 });
 
 describe("POST /user/register", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -44,13 +42,11 @@ describe("POST /user/register", () => {
     await User.deleteMany({});
   });
   it("should handle user registration", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "testuser",
-        email: "testuser@example.com",
-        password: "Password123!",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: "Password123!",
+    });
     expect(response.status).toBe(201);
   });
 
@@ -61,101 +57,98 @@ describe("POST /user/register", () => {
       password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
     }).save();
 
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "newuser",
-        email: "existinguser@example.com",
-        password: "Password123!",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "newuser",
+      email: "existinguser@example.com",
+      password: "Password123!",
+    });
 
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("Email already in use");
   });
 
   it("should not register a user with an invalid email", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "testuser",
-        email: "invalid-email",
-        password: "Password123!",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "testuser",
+      email: "invalid-email",
+      password: "Password123!",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe("Please enter a valid email address");
+    expect(response.body.error[0].msg).toBe(
+      "Please enter a valid email address"
+    );
   });
 
   it("should not register a user with a short password", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "testuser",
-        email: "testuser@example.com",
-        password: "A0!",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: "A0!",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe("Password must be at least 8 characters long");
+    expect(response.body.error[0].msg).toBe(
+      "Password must be at least 8 characters long"
+    );
   });
 
   it("should not register a user with a password missing an uppercase letter", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "testuser",
-        email: "testuser@example.com",
-        password: "password123!",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: "password123!",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe("Password must contain at least one uppercase letter");
+    expect(response.body.error[0].msg).toBe(
+      "Password must contain at least one uppercase letter"
+    );
   });
 
   it("should not register a user with a password missing a number", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "testuser",
-        email: "testuser@example.com",
-        password: "Password!",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: "Password!",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe("Password must contain at least one number");
+    expect(response.body.error[0].msg).toBe(
+      "Password must contain at least one number"
+    );
   });
 
   it("should not register a user with a password missing a special character", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "testuser",
-        email: "testuser@example.com",
-        password: "Password123",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: "Password123",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe("Password must contain at least one special character");
+    expect(response.body.error[0].msg).toBe(
+      "Password must contain at least one special character"
+    );
   });
 
   it("should not register a user with incorrect admin password", async () => {
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "adminuser",
-        email: "badadminuser@example.com",
-        password: "Password123!",
-        adminPass: "wrongAdminPass",
-      });
+    const response = await request(app).post("/user/register").send({
+      username: "adminuser",
+      email: "badadminuser@example.com",
+      password: "Password123!",
+      adminPass: "wrongAdminPass",
+    });
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Incorrect admin password");
   });
 
   it("should register a user as admin with correct admin password", async () => {
-    process.env.ADMIN_PASS = bcrypt.hashSync("correctAdminPass", bcrypt.genSaltSync(10));
-    const response = await request(app)
-      .post("/user/register")
-      .send({
-        username: "adminuser",
-        email: "adminuser@example.com",
-        password: "Password123!",
-        adminPass: "correctAdminPass",
-      });
+    process.env.ADMIN_PASS = bcrypt.hashSync(
+      "correctAdminPass",
+      bcrypt.genSaltSync(10)
+    );
+    const response = await request(app).post("/user/register").send({
+      username: "adminuser",
+      email: "adminuser@example.com",
+      password: "Password123!",
+      adminPass: "correctAdminPass",
+    });
     expect(response.status).toBe(201);
 
     const adminUser = await User.findOne({ email: "adminuser@example.com" });
@@ -164,10 +157,6 @@ describe("POST /user/register", () => {
 });
 
 describe("POST /user/login", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -175,90 +164,80 @@ describe("POST /user/login", () => {
     await User.deleteMany({});
   });
   it("should not login a user with incorrect email", async () => {
-    const response = await request(app)
-      .post("/user/login")
-      .send({
-        email: "wrongemail",
-        password: "Password123!",
-      });
+    const response = await request(app).post("/user/login").send({
+      email: "wrongemail",
+      password: "Password123!",
+    });
     expect(response.status).toBe(400);
-    expect(JSON.stringify(response.body.error)).toContain("Please enter a valid email address");
+    expect(JSON.stringify(response.body.error)).toContain(
+      "Please enter a valid email address"
+    );
   });
-  
+
   it("should handle user login", async () => {
     await new User({
       username: "testuser",
       email: "testuser@example.com",
       password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
     }).save();
-  
-    const response = await request(app)
-      .post("/user/login")
-      .send({
-        email: "testuser@example.com",
-        password: "Password123!",
-      });
+
+    const response = await request(app).post("/user/login").send({
+      email: "testuser@example.com",
+      password: "Password123!",
+    });
     expect(response.status).toBe(200);
     expect(response.body.token).toBeDefined();
   });
-  
-  it("should not login a user with incorrect email", async () => {
 
-    const response = await request(app)
-      .post("/user/login")
-      .send({
-        email: "testuser@example.com",
-        password: "Password123!",
-      });
+  it("should not login a user with incorrect email", async () => {
+    const response = await request(app).post("/user/login").send({
+      email: "testuser@example.com",
+      password: "Password123!",
+    });
     expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Incorrect email or password")
+    expect(response.body.error).toBe("Incorrect email or password");
   });
-  
+
   it("should not login a user with incorrect password", async () => {
     await new User({
       username: "testuser",
       email: "testuser@example.com",
       password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
     }).save();
-  
-    const response = await request(app)
-      .post("/user/login")
-      .send({
-        email: "testuser@example.com",
-        password: "WrongPassword123!",
-      });
+
+    const response = await request(app).post("/user/login").send({
+      email: "testuser@example.com",
+      password: "WrongPassword123!",
+    });
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Incorrect email or password");
   });
-  
+
   it("should receive a valid JWT token on successful login", async () => {
     const user = await new User({
       username: "testuser",
       email: "testuser@example.com",
       password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
     }).save();
-  
-    const response = await request(app)
-      .post("/user/login")
-      .send({
-        email: "testuser@example.com",
-        password: "Password123!",
-      });
-  
+
+    const response = await request(app).post("/user/login").send({
+      email: "testuser@example.com",
+      password: "Password123!",
+    });
+
     expect(response.status).toBe(200);
     expect(response.body.token).toBeDefined();
-  
-    const decodedToken = jwt.verify(response.body.token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
+
+    const decodedToken = jwt.verify(
+      response.body.token,
+      process.env.JWT_SECRET as string
+    ) as jwt.JwtPayload;
     expect(decodedToken._id.toString()).toBe(user._id?.toString());
     expect(decodedToken.username).toBe("testuser");
   });
 });
 
 describe("GET /board/", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -271,17 +250,19 @@ describe("GET /board/", () => {
       email: "testuser@example.com",
       password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
     }).save();
-    const payload: JwtPayload = { _id: user._id, username: user.username, email: user.email, isAdmin: false }
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET as string
-    );
-  
+    const payload: JwtPayload = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: false,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET as string);
+
     await new Board({
       userID: user._id,
       title: "Test Board",
     }).save();
-  
+
     const response = await request(app)
       .get("/board/")
       .set("Authorization", `Bearer ${token}`)
@@ -297,33 +278,34 @@ describe("GET /board/", () => {
       email: "testuser@example.com",
       password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
     }).save();
-    const payload: JwtPayload = { _id: user._id, username: user.username, email: user.email, isAdmin: false }
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET as string
-    );
-  
+    const payload: JwtPayload = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: false,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET as string);
+
     const response = await request(app)
       .get("/board/")
       .set("Authorization", `Bearer ${token}`)
       .query({ email: user.email });
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("No boards found");
-
   });
-  
+
   it("should not fetch boards for a user with invalid token", async () => {
     const response = await request(app)
       .get("/board/")
       .set("Authorization", "Bearer invalidtoken");
-  
+
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Access denied, bad token");
   });
-  
+
   it("should not fetch boards for a user without token", async () => {
     const response = await request(app).get("/board/");
-  
+
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Token not found");
   });
@@ -342,7 +324,12 @@ describe("GET /board/", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: user1.isAdmin },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: user1.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -374,7 +361,12 @@ describe("GET /board/", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: normalUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: normalUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -395,10 +387,6 @@ describe("GET /board/", () => {
 });
 
 describe("GET /column/", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -420,11 +408,16 @@ describe("GET /column/", () => {
     const column = await new Column({
       boardID: board._id,
       title: "Test Column",
-      order: 0
+      order: 0,
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -445,7 +438,12 @@ describe("GET /column/", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -475,7 +473,12 @@ describe("GET /column/", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -506,7 +509,12 @@ describe("GET /column/", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -531,7 +539,12 @@ describe("GET /column/", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -545,10 +558,6 @@ describe("GET /column/", () => {
 });
 
 describe("GET /card/by_column", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -577,11 +586,16 @@ describe("GET /card/by_column", () => {
       columnID: column._id,
       title: "Test Card",
       description: "Test Description",
-      order: 0
+      order: 0,
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -602,7 +616,12 @@ describe("GET /card/by_column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -632,7 +651,12 @@ describe("GET /card/by_column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -669,7 +693,12 @@ describe("GET /card/by_column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -701,7 +730,12 @@ describe("GET /card/by_column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -716,10 +750,6 @@ describe("GET /card/by_column", () => {
 });
 
 describe("DELETE /card", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -752,7 +782,12 @@ describe("DELETE /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -792,7 +827,12 @@ describe("DELETE /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -812,7 +852,12 @@ describe("DELETE /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -857,7 +902,12 @@ describe("DELETE /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -872,10 +922,6 @@ describe("DELETE /card", () => {
 });
 
 describe("DELETE /column", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -908,7 +954,12 @@ describe("DELETE /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -918,7 +969,9 @@ describe("DELETE /column", () => {
       .send({ column_id: column._id?.toString() });
 
     expect(response.status).toBe(200);
-    expect(response.body.message).toBe("Column and associated cards deleted successfully");
+    expect(response.body.message).toBe(
+      "Column and associated cards deleted successfully"
+    );
 
     const deletedColumn = await Column.findById(column._id);
     const deletedCard = await Card.findById(card._id);
@@ -953,7 +1006,12 @@ describe("DELETE /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -973,7 +1031,12 @@ describe("DELETE /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1011,7 +1074,12 @@ describe("DELETE /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1026,10 +1094,6 @@ describe("DELETE /column", () => {
 });
 
 describe("DELETE /board", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -1062,7 +1126,12 @@ describe("DELETE /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1072,7 +1141,9 @@ describe("DELETE /board", () => {
       .send({ board_id: board._id?.toString() });
 
     expect(response.status).toBe(200);
-    expect(response.body.message).toBe("Board and associated columns and cards deleted successfully");
+    expect(response.body.message).toBe(
+      "Board and associated columns and cards deleted successfully"
+    );
 
     const deletedBoard = await Board.findById(board._id);
     const deletedColumn = await Column.findById(column._id);
@@ -1110,7 +1181,12 @@ describe("DELETE /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1130,7 +1206,12 @@ describe("DELETE /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1162,7 +1243,12 @@ describe("DELETE /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1177,10 +1263,6 @@ describe("DELETE /board", () => {
 });
 
 describe("PUT /card/modify", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -1213,7 +1295,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1259,7 +1346,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1321,7 +1413,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1389,7 +1486,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1436,7 +1538,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1457,7 +1564,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1502,7 +1614,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1541,7 +1658,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1586,7 +1708,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1625,7 +1752,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1664,7 +1796,12 @@ describe("PUT /card/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1674,15 +1811,11 @@ describe("PUT /card/modify", () => {
       .send({ card_id: card._id?.toString(), color: "invalidcolor" });
 
     expect(response.status).toBe(200);
-    expect(response.body.color).toBe('#D3D3D3')
+    expect(response.body.color).toBe("#D3D3D3");
   });
 });
 
 describe("PUT /card/move", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -1721,14 +1854,22 @@ describe("PUT /card/move", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .put("/card/move")
       .set("Authorization", `Bearer ${token}`)
-      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+      .send({
+        card_id: card._id?.toString(),
+        column_id: column2._id?.toString(),
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.columnID).toBe(column2._id?.toString());
@@ -1761,7 +1902,12 @@ describe("PUT /card/move", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1782,7 +1928,12 @@ describe("PUT /card/move", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -1821,14 +1972,22 @@ describe("PUT /card/move", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .put("/card/move")
       .set("Authorization", `Bearer ${token}`)
-      .send({ card_id: card._id?.toString(), column_id: "nonexistentcolumnid" });
+      .send({
+        card_id: card._id?.toString(),
+        column_id: "nonexistentcolumnid",
+      });
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("New column not found");
@@ -1871,17 +2030,27 @@ describe("PUT /card/move", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .put("/card/move")
       .set("Authorization", `Bearer ${token}`)
-      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+      .send({
+        card_id: card._id?.toString(),
+        column_id: column2._id?.toString(),
+      });
 
     expect(response.status).toBe(404);
-    expect(response.body.error).toBe("You can only move cards within the same board");
+    expect(response.body.error).toBe(
+      "You can only move cards within the same board"
+    );
   });
 
   it("should not move a card if user has no access", async () => {
@@ -1922,14 +2091,22 @@ describe("PUT /card/move", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .put("/card/move")
       .set("Authorization", `Bearer ${token}`)
-      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+      .send({
+        card_id: card._id?.toString(),
+        column_id: column2._id?.toString(),
+      });
 
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("Access denied");
@@ -1974,14 +2151,22 @@ describe("PUT /card/move", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .put("/card/move")
       .set("Authorization", `Bearer ${adminToken}`)
-      .send({ card_id: card._id?.toString(), column_id: column2._id?.toString() });
+      .send({
+        card_id: card._id?.toString(),
+        column_id: column2._id?.toString(),
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.columnID).toBe(column2._id?.toString());
@@ -1989,10 +2174,6 @@ describe("PUT /card/move", () => {
 });
 
 describe("POST /card", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -2018,7 +2199,12 @@ describe("POST /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2037,14 +2223,12 @@ describe("POST /card", () => {
   });
 
   it("should not add a card without token", async () => {
-    const response = await request(app)
-      .post("/card")
-      .send({
-        column_id: "somecolumnid",
-        title: "Test Card",
-        description: "Test Description",
-        order: 0,
-      });
+    const response = await request(app).post("/card").send({
+      column_id: "somecolumnid",
+      title: "Test Card",
+      description: "Test Description",
+      order: 0,
+    });
 
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Token not found");
@@ -2073,7 +2257,12 @@ describe("POST /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2086,7 +2275,9 @@ describe("POST /card", () => {
       });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("column_id, title, description, and order are required");
+    expect(response.body.error).toBe(
+      "column_id, title, description, and order are required"
+    );
   });
 
   it("should not add a card to a non-existent column", async () => {
@@ -2097,7 +2288,12 @@ describe("POST /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2140,7 +2336,12 @@ describe("POST /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2177,7 +2378,12 @@ describe("POST /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2215,7 +2421,12 @@ describe("POST /card", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2231,7 +2442,9 @@ describe("POST /card", () => {
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.warning).toBe("Invalid color format. Card created without color.");
+    expect(response.body.warning).toBe(
+      "Invalid color format. Card created without color."
+    );
   });
 
   it("should let admin add a card to any column", async () => {
@@ -2260,7 +2473,12 @@ describe("POST /card", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2280,10 +2498,6 @@ describe("POST /card", () => {
 });
 
 describe("PUT /column/modify", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -2309,7 +2523,12 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2347,7 +2566,12 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2390,7 +2614,12 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2411,7 +2640,12 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2449,7 +2683,12 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2481,7 +2720,12 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2520,14 +2764,22 @@ describe("PUT /column/modify", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .put("/column/modify")
       .set("Authorization", `Bearer ${adminToken}`)
-      .send({ column_id: column._id?.toString(), title: "Admin Updated Column" });
+      .send({
+        column_id: column._id?.toString(),
+        title: "Admin Updated Column",
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.title).toBe("Admin Updated Column");
@@ -2535,10 +2787,6 @@ describe("PUT /column/modify", () => {
 });
 
 describe("POST /column", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -2558,7 +2806,12 @@ describe("POST /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2576,13 +2829,11 @@ describe("POST /column", () => {
   });
 
   it("should not create a column without token", async () => {
-    const response = await request(app)
-      .post("/column")
-      .send({
-        board_id: "someboardid",
-        title: "Test Column",
-        order: 0,
-      });
+    const response = await request(app).post("/column").send({
+      board_id: "someboardid",
+      title: "Test Column",
+      order: 0,
+    });
 
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Token not found");
@@ -2610,7 +2861,12 @@ describe("POST /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2633,7 +2889,12 @@ describe("POST /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2669,7 +2930,12 @@ describe("POST /column", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2706,7 +2972,12 @@ describe("POST /column", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2724,10 +2995,6 @@ describe("POST /column", () => {
   });
 });
 describe("POST /board", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -2742,7 +3009,12 @@ describe("POST /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2757,11 +3029,9 @@ describe("POST /board", () => {
   });
 
   it("should not create a board without token", async () => {
-    const response = await request(app)
-      .post("/board")
-      .send({
-        title: "Test Board",
-      });
+    const response = await request(app).post("/board").send({
+      title: "Test Board",
+    });
 
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Token not found");
@@ -2787,15 +3057,19 @@ describe("POST /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
     const response = await request(app)
       .post("/board")
       .set("Authorization", `Bearer ${token}`)
-      .send({
-      });
+      .send({});
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Title is required");
@@ -2803,7 +3077,12 @@ describe("POST /board", () => {
 
   it("should not create a board for a non-existent user", async () => {
     const token = jwt.sign(
-      { _id: "nonexistentuserid", username: "testuser", email: "testuser@example.com", isAdmin: false },
+      {
+        _id: "nonexistentuserid",
+        username: "testuser",
+        email: "testuser@example.com",
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2833,7 +3112,12 @@ describe("POST /board", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2849,10 +3133,6 @@ describe("POST /board", () => {
   });
 });
 describe("PUT /board", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -2872,7 +3152,12 @@ describe("PUT /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2912,7 +3197,12 @@ describe("PUT /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2933,7 +3223,12 @@ describe("PUT /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user._id, username: user.username, email: user.email, isAdmin: false },
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2965,7 +3260,12 @@ describe("PUT /board", () => {
     }).save();
 
     const token = jwt.sign(
-      { _id: user1._id, username: user1.username, email: user1.email, isAdmin: false },
+      {
+        _id: user1._id,
+        username: user1.username,
+        email: user1.email,
+        isAdmin: false,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -2998,7 +3298,12 @@ describe("PUT /board", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -3013,10 +3318,6 @@ describe("PUT /board", () => {
 });
 
 describe("GET /user/all", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -3038,7 +3339,12 @@ describe("GET /user/all", () => {
     }).save();
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -3074,7 +3380,12 @@ describe("GET /user/all", () => {
     }).save();
 
     const userToken = jwt.sign(
-      { _id: normalUser._id, username: normalUser.username, email: normalUser.email, isAdmin: normalUser.isAdmin },
+      {
+        _id: normalUser._id,
+        username: normalUser.username,
+        email: normalUser.email,
+        isAdmin: normalUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -3094,10 +3405,15 @@ describe("GET /user/all", () => {
       isAdmin: true,
     }).save();
 
-    await User.deleteOne({email: adminUser.email})
+    await User.deleteOne({ email: adminUser.email });
 
     const adminToken = jwt.sign(
-      { _id: adminUser._id, username: adminUser.username, email: adminUser.email, isAdmin: adminUser.isAdmin },
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 
@@ -3110,10 +3426,6 @@ describe("GET /user/all", () => {
 });
 
 describe("GET /user", () => {
-  let mongoServer: MongoMemoryServer;
-  
-  
-
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -3128,7 +3440,12 @@ describe("GET /user", () => {
     }).save();
 
     const userToken = jwt.sign(
-      { _id: normalUser._id, username: normalUser.username, email: normalUser.email, isAdmin: normalUser.isAdmin },
+      {
+        _id: normalUser._id,
+        username: normalUser.username,
+        email: normalUser.email,
+        isAdmin: normalUser.isAdmin,
+      },
       process.env.JWT_SECRET as string
     );
 

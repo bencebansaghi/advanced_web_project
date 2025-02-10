@@ -86,6 +86,8 @@ Alternatively, you can manually install dependencies and start the servers:
 
 ## AI Usage during the project
 
-- ChatGPT for setup
-- Github Copilot for generating documentation such as ReadME files
+- Gemini for help setting up jest with prod and dev environments
+- Github Copilot for generating documentation such as README files
 - Github Copilot Edits for generating test cases in the backend
+
+I have reviewed all of the code produced by these tools.
