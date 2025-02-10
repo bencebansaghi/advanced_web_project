@@ -3,15 +3,16 @@ import path from "path";
 import router from "./src/routes/router";
 import morgan from "morgan";
 import cors from "cors";
-import mongoose, { Connection } from 'mongoose';
+import mongoose, { Connection } from "mongoose";
 import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 const app: Express = express();
 const port = Number(process.env.PORT) || 3000;
 
-const mongoDB: string = process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/testdb";
+const mongoDB: string =
+  process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/testdb";
 mongoose.connect(mongoDB);
 mongoose.Promise = Promise;
 const db: Connection = mongoose.connection;
