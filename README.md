@@ -89,5 +89,6 @@ Alternatively, you can manually install dependencies and start the servers:
 - Gemini for help setting up jest with prod and dev environments
 - Github Copilot for generating documentation such as README files
 - Github Copilot Edits for generating test cases in the backend
+- Gemini for helping understand concepts not learned such as global error handling in the frontend
 
 I have reviewed all of the code produced by these tools.
