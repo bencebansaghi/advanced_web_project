@@ -8,7 +8,7 @@ export const errorHandler = (
 ): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400).json({ error: errors.array() });
+    res.status(400).json({ error: errors.array()[0].msg });
   } else {
     next();
   }

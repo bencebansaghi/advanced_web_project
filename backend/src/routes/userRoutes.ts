@@ -17,7 +17,7 @@ import { errorHandler } from "../middlewares/errorHandler";
 
 const userRouter: Router = Router();
 
-// Route to login a user
+// Route to register a user
 // Required in request body: { email, password, username, adminPass (optional) }
 userRouter.post(
   "/register",

@@ -74,7 +74,7 @@ describe("POST /user/register", () => {
       password: "Password123!",
     });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe(
+    expect(response.body.error).toBe(
       "Please enter a valid email address"
     );
   });
@@ -86,7 +86,7 @@ describe("POST /user/register", () => {
       password: "A0!",
     });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe(
+    expect(response.body.error).toBe(
       "Password must be at least 8 characters long"
     );
   });
@@ -98,7 +98,7 @@ describe("POST /user/register", () => {
       password: "password123!",
     });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe(
+    expect(response.body.error).toBe(
       "Password must contain at least one uppercase letter"
     );
   });
@@ -110,7 +110,7 @@ describe("POST /user/register", () => {
       password: "Password!",
     });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe(
+    expect(response.body.error).toBe(
       "Password must contain at least one number"
     );
   });
@@ -122,7 +122,7 @@ describe("POST /user/register", () => {
       password: "Password123",
     });
     expect(response.status).toBe(400);
-    expect(response.body.error[0].msg).toBe(
+    expect(response.body.error).toBe(
       "Password must contain at least one special character"
     );
   });

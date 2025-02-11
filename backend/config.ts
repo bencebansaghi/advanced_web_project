@@ -7,13 +7,12 @@ interface IConfig {
   env: string;
 }
 
-// Typescript does not like my solution but works
 const config: IConfig = {
-  port: process.env.PORT || 3000,
+  port: Number(process.env.PORT) || 3000,
   mongoUri:
     process.env.NODE_ENV === "test"
-      ? process.env.TEST_MONGO_URI
-      : process.env.MONGO_URI || "mongodb://localhost:27017/your_db_name", // Use different DB for testing
+      ? process.env.TEST_MONGO_URI || "mongodb://localhost:27017/test_db"
+      : process.env.MONGO_URI || "mongodb://localhost:27017/your_db_name",
   env: process.env.NODE_ENV || "development",
 };
 
