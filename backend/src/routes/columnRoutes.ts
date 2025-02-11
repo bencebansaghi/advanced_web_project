@@ -41,10 +41,6 @@ columnRouter.get(
   checkAccess,
   async (req: CustomRequest, res: Response) => {
     const columns = await Column.find({ boardID: req.query.board_id });
-    if (!columns || columns.length == 0) {
-      res.status(404).json({ error: "No columns found" });
-      return;
-    }
     res.status(200).json(columns);
   }
 );
@@ -82,6 +78,12 @@ columnRouter.delete(
         res.status(404).json({ error: "Column not found" });
         return;
       }
+      const columns= await Column.find()
+      columns.forEach((column) => {
+        if (column.order>deletedColumn.order){
+          column.order-=1
+        }
+      })
       res
         .status(200)
         .json({ message: "Column and associated cards deleted successfully" });
@@ -194,11 +196,18 @@ columnRouter.post(
   checkAccess,
   async (req: CustomRequest, res: Response) => {
     const { board_id, title, order } = req.body;
+    let actualOrder=0
+    if (order===undefined) {
+      const columns = await Column.find({boardID:board_id})
+      columns?actualOrder=columns.length:actualOrder=0
+    } else {
+      actualOrder=order
+    }
     try {
       const newColumn = new Column({
         boardID: board_id,
         title,
-        order: order !== undefined ? order : 0,
+        order: actualOrder
       });
       await newColumn.save();
       res.status(201).json(newColumn);

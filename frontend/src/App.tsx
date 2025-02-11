@@ -3,8 +3,8 @@ import './App.css'
 import { JSX } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
-import Board from './components/Board';
-import Home from './components/Home';
+import Board from './components/BoardView';
+import Boards from './components/BoardsView'
 
 function App() {
   const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -17,12 +17,16 @@ function App() {
       <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/home" element={
+          <Route path="/boards" element={
               <ProtectedRoute>
-                  <Home />
+                  <Boards />
               </ProtectedRoute>
           } />
-          {/* ... other routes */}
+          <Route path="/board/:board_id/:board_title" element={
+                <ProtectedRoute>
+                  <Board />
+                </ProtectedRoute>
+          } /> 
       </Routes>
   </Router>
   )

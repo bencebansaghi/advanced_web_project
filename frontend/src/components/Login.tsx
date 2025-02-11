@@ -20,7 +20,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             }
             const data = await response.json();
             localStorage.setItem('jwt', data.token);
-            window.location.href = '/home';
+            window.location.href = '/boards';
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message);
