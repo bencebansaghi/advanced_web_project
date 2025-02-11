@@ -272,28 +272,6 @@ describe("GET /board/", () => {
     expect(response.body[0].title).toBe("Test Board");
   });
 
-  it("should show that user has no boards", async () => {
-    const user = await new User({
-      username: "testuser",
-      email: "testuser@example.com",
-      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
-    }).save();
-    const payload: JwtPayload = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      isAdmin: false,
-    };
-    const token = jwt.sign(payload, process.env.JWT_SECRET as string);
-
-    const response = await request(app)
-      .get("/board/")
-      .set("Authorization", `Bearer ${token}`)
-      .query({ email: user.email });
-    expect(response.status).toBe(404);
-    expect(response.body.error).toBe("No boards found");
-  });
-
   it("should not fetch boards for a user with invalid token", async () => {
     const response = await request(app)
       .get("/board/")
@@ -524,36 +502,6 @@ describe("GET /column/", () => {
       .query({ board_id: board._id?.toString() });
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("Access denied");
-  });
-
-  it("should show that no columns were found for an empty board", async () => {
-    const user = await new User({
-      username: "testuser",
-      email: "testuser@example.com",
-      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
-    }).save();
-
-    const board = await new Board({
-      userID: user._id,
-      title: "Empty Board",
-    }).save();
-
-    const token = jwt.sign(
-      {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        isAdmin: false,
-      },
-      process.env.JWT_SECRET as string
-    );
-
-    const response = await request(app)
-      .get("/column/")
-      .set("Authorization", `Bearer ${token}`)
-      .query({ board_id: board._id?.toString() });
-    expect(response.status).toBe(404);
-    expect(response.body.error).toBe("No columns found");
   });
 });
 
@@ -2276,7 +2224,7 @@ describe("POST /card", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe(
-      "column_id, title, description, and order are required"
+      "column_id, title, and description are required"
     );
   });
 

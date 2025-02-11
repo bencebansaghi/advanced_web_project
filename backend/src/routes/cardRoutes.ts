@@ -90,6 +90,12 @@ cardRouter.delete(
         res.status(404).json({ error: "Card not found" });
         return;
       }
+      const cards= await Card.find()
+      cards.forEach((card) => {
+        if (card.order>deletedCard.order){
+          card.order-=1
+        }
+      })
       res.status(200).json({ message: "Card deleted successfully" });
     } catch (error) {
       console.error("Error deleting card:", error);
@@ -246,17 +252,17 @@ cardRouter.put(
 
 // Route to add a card
 // Required in request headers: { Authorization: Bearer <token> }
-// Required in request body: { column_id, title, description, color (optional), order }
+// Required in request body: { column_id, title, description, color (optional), order (optional) }
 cardRouter.post(
   "/",
   validateUserToken,
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     const { column_id, title, description, order } = req.body;
-    if (!column_id || !title || !description || order === undefined) {
+    if (!column_id || !title || !description === undefined) {
       res
         .status(400)
         .json({
-          error: "column_id, title, description, and order are required",
+          error: "column_id, title, and description are required",
         });
       return;
     }
@@ -276,11 +282,18 @@ cardRouter.post(
   async (req: CustomRequest, res: Response) => {
     try {
       const { column_id, title, description, order, color } = req.body;
+      let actualOrder=0
+      if (order===undefined) {
+            const cards = await Card.find({columnID:column_id})
+            cards?actualOrder=cards.length:actualOrder=0
+          } else {
+            actualOrder=order
+          }
       const card = new Card({
         columnID: column_id,
         title,
         description,
-        order,
+        order:actualOrder,
       });
 
       let colorWarning = null;

@@ -17,16 +17,14 @@ const boardRouter: Router = Router();
 
 // Route to get boards of a user
 // Required in request headers: { Authorization: Bearer <token> }
-// Required in request query: { email (of requested user) }
+// Required in request query: { email (of requested user, if not given, gets own) }
 boardRouter.get(
   "/",
   validateUserToken,
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     if (!req.query.email) {
-      res.status(400).json("User email is required in query params");
-      return;
-    }
-    req.body.email = req.query.email;
+      req.body.email=req.user?.email
+    } else req.body.email = req.query.email;
     next();
   },
   checkAccess,
@@ -34,10 +32,6 @@ boardRouter.get(
     try {
       const user = await User.findOne({ email: req.body.email });
       const boards: IBoard[] = await Board.find({ userID: user?._id });
-      if (!boards || boards.length == 0) {
-        res.status(404).json({ error: "No boards found" });
-        return;
-      }
       res.status(200).json(boards);
     } catch (error) {
       console.error("Error fetching boards:", error);
