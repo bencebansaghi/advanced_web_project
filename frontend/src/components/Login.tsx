@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { TextField, Button, Typography, Box } from '@mui/material';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -31,30 +32,24 @@ const handleSubmit = async (e: React.FormEvent) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-            <label htmlFor="email">Email:</label>
-            <input
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+                label="Email"
                 type="email"
-                id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
             />
-            </div>
-            <div>
-            <label htmlFor="password">Password:</label>
-            <input
+            <TextField
+                label="Password"
                 type="password"
-                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
             />
-            </div>
-            <button type="submit">Login</button>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </form>
+            <Button type="submit" variant="contained">Login</Button>
+            {error && <Typography color="error">{error}</Typography>}
+        </Box>
     )
 }
 

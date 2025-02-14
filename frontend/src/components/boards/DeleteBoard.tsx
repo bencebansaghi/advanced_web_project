@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { Button } from '@mui/material';
 
 interface DeleteBoardProps {
     board_id: string,
@@ -29,7 +30,7 @@ const DeleteBoard: React.FC<DeleteBoardProps> = ({ board_id, onBoardDeleted }) =
     }
 
   return (
-      <button onClick={deleteBoard}>delete</button>
+    <Button variant="contained" color="error" onClick={deleteBoard}>Delete</Button>
   )
 }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TextField, Button, Box } from '@mui/material';
 
 interface AddColumnProps {
   board_id: string;
@@ -30,15 +31,15 @@ const AddColumn: React.FC<AddColumnProps> = ({ board_id, onColumnAdded }) => {
   };
 
   return (
-    <>
-      <input 
-        type="text" 
-        value={title} 
-        onChange={(e) => setTitle(e.target.value)} 
-        placeholder="Enter column title" 
+    <Box sx={{ display: 'flex', gap: 2 }}>
+      <TextField
+        label="Column Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Enter column title"
       />
-      <button onClick={postColumn}>Submit</button>
-    </>
+      <Button variant="contained" onClick={postColumn}>Submit</Button>
+    </Box>
   );
 };
 

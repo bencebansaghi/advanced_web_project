@@ -28,7 +28,7 @@ function isHexColor(hex: string) {
 // Required in request headers: { Authorization: Bearer <token> }
 // Required in request query: { column_id }
 cardRouter.get(
-  "/by_column",
+  "/",
   validateUserToken,
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     if (!req.query.column_id) {
@@ -232,6 +232,10 @@ cardRouter.put(
   checkAccess,
   async (req: CustomRequest, res: Response) => {
     const { card_id, column_id } = req.body;
+    const card = await Card.findById(card_id).catch(() => null);
+    if (!card) return
+    const newColumnLenght = (await Card.find({columnID:column_id})).length
+
     try {
       const updatedCard = await Card.findByIdAndUpdate(
         card_id,
@@ -242,6 +246,15 @@ cardRouter.put(
         res.status(404).json({ error: "Card not found" });
         return;
       }
+      const oldColumnCards = await Card.find({columnID:card?.columnID})
+      oldColumnCards.forEach(async (oldCard) => {
+        if (oldCard.order>card?.order) {
+          oldCard.order-=1
+          await oldCard.save()
+        }
+      })
+      updatedCard.order=newColumnLenght
+      await updatedCard.save()
       res.status(200).json(updatedCard);
     } catch (error) {
       console.error("Error moving card:", error);

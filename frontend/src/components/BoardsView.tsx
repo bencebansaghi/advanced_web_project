@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Typography, Button, Box, List, ListItem } from '@mui/material';
 import IBoard from '../interfaces/Board';
-import AddBoard from './boards/AddBoard'
+import AddBoard from './boards/AddBoard';
 import DeleteBoard from './boards/DeleteBoard';
 import RenameBoard from './boards/RenameBoard';
-import { Link } from 'react-router-dom';
 
 function Boards() {
   const [boards, setBoards] = useState<IBoard[]>([])
@@ -34,13 +35,13 @@ function Boards() {
   }, [refresh])
 
   return (
-    <>
+    <Box>
       {boards.length === 0 ? (
-        <p>No boards found</p>
+        <Typography>No boards found</Typography>
       ) : (
-        <ul>
+        <List>
           {boards.map((board) => (
-            <li key={board._id}>
+            <ListItem key={board._id}>
               {renamingBoardId === board._id ? (
                 <RenameBoard
                   board_id={board._id}
@@ -51,14 +52,16 @@ function Boards() {
                 />
               ) : (
                 <>
-                  <Link to={`/board/${board._id}/${board.title}`}>{board.title}</Link>
-                  <button onClick={() => setRenamingBoardId(board._id)}>Rename</button>
+                    <Button component={Link} to={`/board/${board._id}/${board.title}`}>
+                    {board.title}
+                    </Button>
+                  <Button variant="outlined" onClick={() => setRenamingBoardId(board._id)}>Rename</Button>
                 </>
               )}
               <DeleteBoard board_id={board._id} onBoardDeleted={() => setRefresh(!refresh)} />
-            </li>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
       {showAddBoard ? (
         <AddBoard
@@ -68,10 +71,10 @@ function Boards() {
           }}
         />
       ) : (
-        <button onClick={() => setShowAddBoard(true)}>Add Board</button>
+        <Button variant="contained" onClick={() => setShowAddBoard(true)}>Add Board</Button>
       )}
-    </>
+    </Box>
   );
 }
 
-export default Boards
+export default Boards;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TextField, Button, Box } from '@mui/material';
 
 interface RenameColumnProps {
   column_id: string;
@@ -30,15 +31,15 @@ const RenameColumn: React.FC<RenameColumnProps> = ({ column_id, onColumnRenamed 
   };
 
   return (
-    <>
-      <input 
-        type="text" 
-        value={title} 
-        onChange={(e) => setTitle(e.target.value)} 
-        placeholder="Enter column title" 
+    <Box sx={{ display: 'flex', gap: 2 }}>
+      <TextField
+        label="Column Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Enter column title"
       />
-      <button onClick={renameColumn}>Submit</button>
-    </>
+      <Button variant="contained" onClick={renameColumn}>Submit</Button>
+    </Box>
   );
 };
 

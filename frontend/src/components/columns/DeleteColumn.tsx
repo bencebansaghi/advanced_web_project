@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@mui/material';
 
 interface DeleteColumnProps {
   column_id: string;
@@ -28,7 +29,7 @@ const DeleteColumn: React.FC<DeleteColumnProps> = ({ column_id, onColumnDeleted 
   };
 
   return (
-    <button onClick={deleteColumn}>Delete</button>
+    <Button variant="contained" color="error" onClick={deleteColumn}>Delete</Button>
   );
 };
 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { TextField, Button, Box } from '@mui/material';
 
 const AddBoard: React.FC<{ onBoardAdded: () => void }> = ({ onBoardAdded }) => {
   const [title, setTitle] = useState<string>('')
@@ -25,16 +26,16 @@ const AddBoard: React.FC<{ onBoardAdded: () => void }> = ({ onBoardAdded }) => {
   }
 
   return (
-    <>
-      <input 
-        type="text" 
-        value={title} 
-        onChange={(e) => setTitle(e.target.value)} 
-        placeholder="Enter board title" 
+    <Box sx={{ display: 'flex', gap: 2 }}>
+      <TextField
+        label="Board Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Enter board title"
       />
-      <button onClick={postBoard}>submit</button>
-    </>
-  )
-}
+      <Button variant="contained" onClick={postBoard}>Submit</Button>
+    </Box>
+  );
+};
 
-export default AddBoard
+export default AddBoard;

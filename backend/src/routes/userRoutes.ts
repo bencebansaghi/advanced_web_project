@@ -48,10 +48,11 @@ userRouter.post(
           res.status(500).json({ error: "Internal server error" });
           return;
         }
-        if (bcrypt.compareSync(req.body.adminPass, process.env.ADMIN_PASS)) {
+        if (req.body.adminPass==process.env.ADMIN_PASS) {
           new_user.isAdmin = true;
         } else {
           res.status(400).json({ error: "Incorrect admin password" });
+          return
         }
       }
 
@@ -109,6 +110,7 @@ userRouter.get(
     if (!users || users.length == 0) {
       res.status(404).json({ error: "No users found" });
     } else {
+      console.log(users)
       res.status(200).json({ users: users });
     }
   }

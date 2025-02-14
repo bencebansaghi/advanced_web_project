@@ -139,10 +139,7 @@ describe("POST /user/register", () => {
   });
 
   it("should register a user as admin with correct admin password", async () => {
-    process.env.ADMIN_PASS = bcrypt.hashSync(
-      "correctAdminPass",
-      bcrypt.genSaltSync(10)
-    );
+    process.env.ADMIN_PASS = "correctAdminPass"
     const response = await request(app).post("/user/register").send({
       username: "adminuser",
       email: "adminuser@example.com",
@@ -505,7 +502,7 @@ describe("GET /column/", () => {
   });
 });
 
-describe("GET /card/by_column", () => {
+describe("GET /card/", () => {
   beforeEach(async () => {
     await Card.deleteMany({});
     await Column.deleteMany({});
@@ -548,7 +545,7 @@ describe("GET /card/by_column", () => {
     );
 
     const response = await request(app)
-      .get("/card/by_column")
+      .get("/card/")
       .set("Authorization", `Bearer ${token}`)
       .query({ column_id: column._id?.toString() });
     expect(response.status).toBe(200);
@@ -574,7 +571,7 @@ describe("GET /card/by_column", () => {
     );
 
     const response = await request(app)
-      .get("/card/by_column")
+      .get("/card/")
       .set("Authorization", `Bearer ${token}`)
       .query({ column_id: "nonexistentcolumnid" });
 
@@ -584,7 +581,7 @@ describe("GET /card/by_column", () => {
 
   it("should not fetch cards for a column without token", async () => {
     const response = await request(app)
-      .get("/card/by_column")
+      .get("/card/")
       .query({ column_id: "somecolumnid" });
 
     expect(response.status).toBe(401);
@@ -609,7 +606,7 @@ describe("GET /card/by_column", () => {
     );
 
     const response = await request(app)
-      .get("/card/by_column")
+      .get("/card/")
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(400);
@@ -651,7 +648,7 @@ describe("GET /card/by_column", () => {
     );
 
     const response = await request(app)
-      .get("/card/by_column")
+      .get("/card/")
       .set("Authorization", `Bearer ${token}`)
       .query({ column_id: column._id?.toString() });
 
@@ -688,7 +685,7 @@ describe("GET /card/by_column", () => {
     );
 
     const response = await request(app)
-      .get("/card/by_column")
+      .get("/card/")
       .set("Authorization", `Bearer ${token}`)
       .query({ column_id: column._id?.toString() });
 

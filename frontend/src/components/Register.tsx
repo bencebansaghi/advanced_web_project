@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TextField, Button, Checkbox, FormControlLabel, Typography, Box } from '@mui/material';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log('is admin: '+isAdmin)
       const response = await fetch('/api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,62 +33,44 @@ const Register = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="username">Username:</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label>
-          <input
-            type="checkbox"
-            checked={isAdmin}
-            onChange={(e) => setIsAdmin(e.target.checked)}
-          />
-          Register as Admin
-        </label>
-      </div>
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <TextField
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <TextField
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <TextField
+        label="Username"
+        type="text"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        required
+      />
+      <FormControlLabel
+        control={<Checkbox checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} />}
+        label="Register as Admin"
+      />
       {isAdmin && (
-        <div>
-          <label htmlFor="adminPass">Admin Password:</label>
-          <input
-            type="password"
-            id="adminPass"
-            value={adminPass}
-            onChange={(e) => setAdminPass(e.target.value)}
-            required
-          />
-        </div>
+        <TextField
+          label="Admin Password"
+          type="password"
+          value={adminPass}
+          onChange={(e) => setAdminPass(e.target.value)}
+          required
+        />
       )}
-      <button type="submit">Register</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </form>
+      <Button type="submit" variant="contained">Register</Button>
+      {error && <Typography color="error">{error}</Typography>}
+    </Box>
   );
 };
 
