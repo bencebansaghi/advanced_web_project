@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
 
 if (process.env.NODE_ENV === "production") {
-  const clientBuildPath = path.resolve(__dirname, "..", "..", "client", "dist");
+  const clientBuildPath = path.resolve(__dirname, "..", "..", "frontend", "dist");
 
   app.use(express.static(clientBuildPath));
 

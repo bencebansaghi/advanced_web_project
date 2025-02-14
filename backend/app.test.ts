@@ -339,6 +339,60 @@ describe("PUT /user", () => {
     expect(response.status).toBe(200);
     expect(response.body.user.username).toBe("adminupdateduser");
   });
+
+  it("should update user password successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/user")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ password: "NewPassword123!" });
+
+    expect(response.status).toBe(200);
+
+    const updatedUser = await User.findById(user._id);
+    const isPasswordMatch = bcrypt.compareSync("NewPassword123!", updatedUser?.password || "");
+    expect(isPasswordMatch).toBe(true);
+  });
+
+  it("should not update user information if nothing to modify", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/user")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Either username or password must be provided");
+  });
 });
 
 describe("DELETE /user", () => {

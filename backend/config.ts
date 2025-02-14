@@ -12,7 +12,7 @@ const config: IConfig = {
   mongoUri:
     process.env.NODE_ENV === "test"
       ? process.env.TEST_MONGO_URI || "mongodb://localhost:27017/test_db"
-      : process.env.MONGO_URI || "mongodb://localhost:27017/your_db_name",
+      : process.env.MONGO_URI || "mongodb://localhost:27017/db_name",
   env: process.env.NODE_ENV || "development",
 };
 

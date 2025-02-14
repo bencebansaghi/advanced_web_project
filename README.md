@@ -1,6 +1,22 @@
 # advanced_web_project
- 
+
 This project is a Kanban board application built using Node.js for the backend and React for the frontend. It allows users to manage tasks using a visual board with columns representing different stages of the workflow.
+
+## Table of Contents
+- [advanced\_web\_project](#advanced_web_project)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Technologies Used](#technologies-used)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Running in Development](#running-in-development)
+    - [Running in Production](#running-in-production)
+    - [Testing](#testing)
+  - [Usage](#usage)
+  - [AI Usage during the project](#ai-usage-during-the-project)
 
 ## Features
 
@@ -22,31 +38,26 @@ This project is a Kanban board application built using Node.js for the backend a
 ### Frontend
 - React
 - Vite
-- Axios for API calls
 - Material-UI for styling
-- Vitest for testing
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js
-- npm or yarn
+- npm
 - MongoDB
 
 ### Installation
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/yourusername/advanced_web_project.git
-    ```
-2. Navigate to the project directory:
+1. Navigate to the project directory:
     ```sh
     cd advanced_web_project
     ```
-3. Install dependencies for both backend and frontend using the postinstall script:
+2. Install dependencies for both backend and frontend using the postinstall script:
     ```sh
     npm run postinstall
     ```
+3. Set up the environment variables in backend
 4. Start the backend and frontend servers concurrently:
     ```sh
     npm start
@@ -54,14 +65,14 @@ This project is a Kanban board application built using Node.js for the backend a
 
 Alternatively, you can manually install dependencies and start the servers:
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/yourusername/advanced_web_project.git
-    ```
-2. Navigate to the backend directory and install dependencies:
+1. Navigate to the backend directory and install dependencies:
     ```sh
     cd backend
     npm install
+    ```
+2. Set up the environment variables:
+    ```sh
+    cp .env.example .env
     ```
 3. Start the backend server:
     ```sh
@@ -77,18 +88,55 @@ Alternatively, you can manually install dependencies and start the servers:
     npm start
     ```
 
+For more detailed information, refer to the README files in the `backend` and `frontend` directories.
+
+### Running in Development
+
+To run the project in development mode:
+
+1. Ensure you have set up the environment variables as described in the Installation section.
+2. Start the backend and frontend servers concurrently in development mode:
+    ```sh
+    npm run dev
+    ```
+
+### Running in Production
+
+To run the project in production mode:
+
+1. Ensure you have set up the environment variables as described in the Installation section.
+2. Build the frontend:
+    ```sh
+    npm run build
+    ```
+3. Start the backend and frontend servers concurrently in production mode:
+    ```sh
+    npm start
+    ```
+
+### Testing
+
+To run tests for the backend:
+
+1. Navigate to the project directory:
+    ```sh
+    cd advanced_web_project
+    ```
+2. Run the backend tests:
+    ```sh
+    npm run test
+    ```
+
 ## Usage
 
-1. Open your browser and go to `http://localhost:5173`.
+1. Open your browser and go to `http://localhost:1234`.
 2. Register a new account or log in with an existing account.
 3. Start managing your tasks on the Kanban board.
-
 
 ## AI Usage during the project
 
 - Gemini for help setting up jest with prod and dev environments
-- Github Copilot for generating documentation such as README files
+- Github Copilot for generating documentation such as README files and working with Materialize UI
 - Github Copilot Edits for generating test cases in the backend
-- Gemini for helping understand concepts not learned such as global error handling in the frontend
 
 I have reviewed all of the code produced by these tools.

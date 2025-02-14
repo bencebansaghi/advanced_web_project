@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, Container, Typography } from "@mui/material";
+import React from "react";
+import { Button, Container } from "@mui/material";
 
 interface DeleteUserProps {
   userId?: string;

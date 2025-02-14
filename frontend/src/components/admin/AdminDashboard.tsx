@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { TextField, Button, Checkbox, FormControlLabel, Typography, Box } from '@mui/material';
+import { useEffect, useState } from 'react'
+import { Button, Checkbox, FormControlLabel, Typography, Box } from '@mui/material';
 import DeleteUser from '../user/DeleteUser';
 import ModifyUser from '../user/ModifyUser';
 

@@ -1,50 +1,81 @@
-# React + TypeScript + Vite
+# Advanced Web Project Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend part of the Advanced Web Project. It is built using React, Vite, and TypeScript.
 
-Currently, two official plugins are available:
+## Table of Contents
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- [Advanced Web Project Frontend](#advanced-web-project-frontend)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Getting Started](#getting-started)
+  - [Scripts](#scripts)
+  - [Frontend Logic](#frontend-logic)
+  - [Proxy Configuration](#proxy-configuration)
+  - [Authentication](#authentication)
+  - [Frontend Routes](#frontend-routes)
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Node.js (v16 or higher)
+- npm or yarn
 
-- Configure the top-level `parserOptions` property like this:
+## Getting Started
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+1. Install dependencies:
+    ```sh
+    npm install
+    # or
+    yarn install
+    ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. Start the development server:
+    ```sh
+    npm run dev
+    # or
+    yarn dev
+    ```
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+3. Open your browser and navigate to `http://localhost:1234`.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Scripts
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the project for production.
+- `npm run lint`: Runs ESLint to check for linting errors.
+- `npm run preview`: Previews the production build.
+
+## Frontend Logic
+
+- **User Authentication:**
+  - Users can register or log in.
+  - Admin accounts can be created during registration using a backend-stored admin password.
+
+- **Regular User Capabilities:**
+  - Modify or delete their profiles.
+  - Manage boards: add, modify, or delete.
+  - Manage columns within boards: add, modify, or delete.
+  - Manage cards within columns: add, modify, or delete.
+  - Drag and drop functionality for moving cards and columns.
+
+- **Admin User Capabilities:**
+  - Access an admin dashboard.
+  - Modify or delete any user.
+  - Access and manage any user's boards.
+
+
+## Proxy Configuration
+
+The development server is configured to proxy API requests to `http://localhost:3000`. You can change this configuration in `vite.config.ts`.
+
+## Authentication
+
+The application uses JWT for authentication. Protected routes are implemented to ensure only authenticated users can access certain pages. Admin routes are also implemented to restrict access to admin users.
+
+## Frontend Routes
+
+- `/login`: Login page.
+- `/register`: Registration page.
+- `/boards`: View all boards (protected route).
+- `/board/:board_id/:board_title`: View a specific board (protected route).
+- `/admin`: Admin dashboard (admin route).
+- `/profile`: User profile page (protected route).

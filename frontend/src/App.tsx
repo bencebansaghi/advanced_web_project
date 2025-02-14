@@ -18,6 +18,7 @@ function App() {
   const AdminRoute = ({ children }: { children: JSX.Element }) => {
     const token = localStorage.getItem('jwt');
     if (token) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const decodedToken: any = jwtDecode(token);
       return decodedToken.isAdmin ? children : <Navigate to="/boards" />;
     }

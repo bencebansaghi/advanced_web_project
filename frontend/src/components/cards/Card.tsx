@@ -15,22 +15,24 @@ const Card: React.FC<CardProps> = ({ card, onChange }) => {
   return (
     <MuiCard key={card._id} id={card._id} sx={{ backgroundColor: `${card.color}80`, marginBottom: 2 }}>
       <CardContent>
-      <Typography variant="h5">{card.title}</Typography>
-      <Typography variant="body2">{card.description}</Typography>
-      {modifying ? (
-        <ModifyCard 
-        card_id={card._id} 
-        onChange={() => {
-          onChange();
-          setModifying(false);
-        }} 
-        />
-      ) : (
-        <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button variant="outlined" onClick={() => setModifying(true)}>Modify</Button>
-        <DeleteCard card_id={card._id} onCardDeleted={onChange} />
-        </Box>
-      )}
+        <Typography variant="h5">{card.title}</Typography>
+        <Typography variant="body2">{card.description}</Typography>
+        <Typography variant="body2">Created At: {card.createdAt?.toLocaleString()}</Typography>
+        <Typography variant="body2">Modified At: {card.updatedAt?.toLocaleString()}</Typography>
+        {modifying ? (
+          <ModifyCard 
+            card_id={card._id} 
+            onChange={() => {
+              onChange();
+              setModifying(false);
+            }} 
+          />
+        ) : (
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button variant="outlined" onClick={() => setModifying(true)}>Modify</Button>
+            <DeleteCard card_id={card._id} onCardDeleted={onChange} />
+          </Box>
+        )}
       </CardContent>
     </MuiCard>
   );

@@ -7,6 +7,7 @@ const Header = () => {
     let isAdmin = false;
 
     if (token) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const decodedToken: any = jwtDecode(token);
         isAdmin = decodedToken.isAdmin;
     }

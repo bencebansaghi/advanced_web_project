@@ -5,5 +5,6 @@ export default interface ICard {
   description: string;
   color?: string;
   order: number; // where is it placed
+  createdAt?: Date;
+  updatedAt?: Date;
 }
-

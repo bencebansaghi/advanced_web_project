@@ -6,7 +6,7 @@ import IColumn from '../interfaces/Column';
 import AddColumn from './columns/AddColumn';
 import DeleteColumn from './columns/DeleteColumn';
 import RenameColumn from './columns/RenameColumn';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import ICard from '../interfaces/Card';
 import Card from './cards/Card';
 import AddCard from './cards/AddCard';
@@ -36,7 +36,7 @@ const Board = () => {
   useEffect(() => {
     const fetchAllCards = async () => {
       if (!board_id || columns.length === 0) return;
-      const allCards = {};
+      const allCards: Record<string, ICard[]> = {};
       for (const column of columns) {
         try {
           const token = localStorage.getItem('jwt');
@@ -63,7 +63,7 @@ const Board = () => {
     fetchAllCards();
   }, [board_id, refresh, columns]);
 
-  const onDragEnd = async (result: any) => {
+  const onDragEnd = async (result: DropResult) => {
     const { source, destination, type } = result;
 
     if (!destination) return;
@@ -191,7 +191,7 @@ const Board = () => {
     <DragDropContext onDragEnd={onDragEnd}>
       <Box>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h1" gutterBottom>{board_title}</Typography>
+          <Typography variant="h3" gutterBottom>{board_title}</Typography>
           <Button variant="outlined" component={Link} to="/boards">
             Back
           </Button>
