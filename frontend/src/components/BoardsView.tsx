@@ -15,16 +15,19 @@ function Boards() {
   const fetchBoards = async () => {
     try {
       const token = localStorage.getItem('jwt');
-      const response = await fetch('/api/board', {
+      const email = localStorage.getItem('email');
+      const link=email?`/api/board?email=${email}`:`/api/board`
+      const response = await fetch(link, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
+      });
       const data = await response.json();
       if (!response.ok) {
         throw new Error("Failed to fetch data: "+data.error)
       }
       setBoards(data);
+
     } catch (error) {
       console.error('Failed to fetch boards:', error)
     }

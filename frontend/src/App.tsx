@@ -7,6 +7,7 @@ import Board from './components/BoardView';
 import Boards from './components/BoardsView';
 import Header from './components/Header';
 import AdminDashboard from './components/admin/AdminDashboard.tsx'; // Assuming you have an AdminDashboard component
+import Profile from './components/user/Profile.tsx';
 
 function App() {
   const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -44,7 +45,13 @@ function App() {
             <AdminDashboard />
           </AdminRoute>
         } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
       </Routes>
+      
     </Router>
   );
 }

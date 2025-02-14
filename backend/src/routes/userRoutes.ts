@@ -8,10 +8,12 @@ dotenv.config();
 import { IUser, User } from "../models/User";
 import validateUserLogin from "../middlewares/validateLogin";
 import validateUserRegister from "../middlewares/validateRegister";
+import validateUserUpdate from "../middlewares/validateUpdate";
 import {
   validateUserToken,
   validateAdmin,
   CustomRequest,
+  checkAccess,
 } from "../middlewares/validateToken";
 import { errorHandler } from "../middlewares/errorHandler";
 
@@ -110,7 +112,6 @@ userRouter.get(
     if (!users || users.length == 0) {
       res.status(404).json({ error: "No users found" });
     } else {
-      console.log(users)
       res.status(200).json({ users: users });
     }
   }
@@ -127,6 +128,75 @@ userRouter.get(
       res.status(404).json({ error: "User not found" });
     } else {
       res.status(200).json({ user: user });
+    }
+  }
+);
+
+// Route to update user information
+// Required in request headers: { Authorization: Bearer <token> }
+// Required in request body: { user_id (optional, for admin), username (optional), password (optional) }
+userRouter.put(
+  "/",
+  validateUserToken,
+  validateUserUpdate,
+  errorHandler,
+  async (req: CustomRequest, res: Response, next: NextFunction) => {
+    if (req.user?.isAdmin && req.body.user_id) {
+      req.body.email = (await User.findById(req.body.user_id))?.email;
+    } else {
+      req.body.email = req.user?.email;
+    }
+    next();
+  },
+  checkAccess,
+  async (req: CustomRequest, res: Response) => {
+    try {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      if (req.body.username) user.username = req.body.username;
+      if (req.body.password) {
+        user.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10));
+      }
+
+      const updatedUser = await user.save();
+      res.status(200).json({ user: updatedUser });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Route to delete user account
+// Required in request headers: { Authorization: Bearer <token> }
+// Required in request body: { user_id (optional, for admin) }
+userRouter.delete(
+  "/",
+  validateUserToken,
+  async (req: CustomRequest, res: Response, next: NextFunction) => {
+    if (req.user?.isAdmin && req.body.user_id) {
+      req.body.email = (await User.findById(req.body.user_id))?.email;
+    } else {
+      req.body.email = req.user?.email;
+    }
+    next();
+  },
+  checkAccess,
+  async (req: CustomRequest, res: Response) => {
+    try {
+      const user = await User.findOneAndDelete({ email: req.body.email });
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+      } else {
+        res.status(200).json({ message: "User deleted successfully" });
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 );

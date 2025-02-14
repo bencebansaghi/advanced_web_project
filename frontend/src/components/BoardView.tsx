@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Typography, Button, Box } from '@mui/material';
 import { getColumns } from './columns/getColumns';
 import IColumn from '../interfaces/Column';
@@ -192,7 +192,9 @@ const Board = () => {
       <Box>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Typography variant="h1" gutterBottom>{board_title}</Typography>
-          <Button variant="contained" onClick={() => window.location.href = '/boards'}>Back to Boards</Button>
+          <Button variant="outlined" component={Link} to="/boards">
+            Back
+          </Button>
         </Box>
         <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
           {(provided) => (

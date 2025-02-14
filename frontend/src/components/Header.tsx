@@ -19,7 +19,7 @@ const Header = () => {
                 </Typography>
                 {token ? (
                     <>
-                        <Button color="inherit" component={Link} to="/boards">Boards</Button>
+                        <Button color="inherit" onClick={() => localStorage.removeItem('email')} component={Link} to="/boards">Boards</Button>
                         {isAdmin && <Button color="inherit" component={Link} to="/admin">Admin Dashboard</Button>}
                         <Button color="inherit" component={Link} to="/profile">Profile</Button>
                         <Button variant="contained" color="error" 

@@ -234,6 +234,215 @@ describe("POST /user/login", () => {
   });
 });
 
+describe("PUT /user", () => {
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
+
+  it("should update user information successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/user")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ username: "updateduser" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.user.username).toBe("updateduser");
+  });
+
+  it("should not update user information without token", async () => {
+    const response = await request(app)
+      .put("/user")
+      .send({ username: "updateduser" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not update user information with invalid token", async () => {
+    const response = await request(app)
+      .put("/user")
+      .set("Authorization", "Bearer invalidtoken")
+      .send({ username: "updateduser" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not update non-existent user", async () => {
+    const token = jwt.sign(
+      {
+        _id: new mongoose.Types.ObjectId(),
+        username: "nonexistentuser",
+        email: "nonexistent@example.com",
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/user")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ username: "updateduser" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("User not found");
+  });
+
+  it("should let admin update another user's information", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const adminToken = jwt.sign(
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .put("/user")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ user_id: normalUser._id?.toString(), username: "adminupdateduser" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.user.username).toBe("adminupdateduser");
+  });
+});
+
+describe("DELETE /user", () => {
+  beforeEach(async () => {
+    await Card.deleteMany({});
+    await Column.deleteMany({});
+    await Board.deleteMany({});
+    await User.deleteMany({});
+  });
+
+  it("should delete user account successfully", async () => {
+    const user = await new User({
+      username: "testuser",
+      email: "testuser@example.com",
+      password: bcrypt.hashSync("Password123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .delete("/user")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("User deleted successfully");
+  });
+
+  it("should not delete user account without token", async () => {
+    const response = await request(app).delete("/user");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Token not found");
+  });
+
+  it("should not delete user account with invalid token", async () => {
+    const response = await request(app)
+      .delete("/user")
+      .set("Authorization", "Bearer invalidtoken");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Access denied, bad token");
+  });
+
+  it("should not delete non-existent user", async () => {
+    const token = jwt.sign(
+      {
+        _id: new mongoose.Types.ObjectId(),
+        username: "nonexistentuser",
+        email: "nonexistent@example.com",
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .delete("/user")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("User not found");
+  });
+
+  it("should let admin delete another user's account", async () => {
+    const adminUser = await new User({
+      username: "admin",
+      email: "admin@example.com",
+      password: bcrypt.hashSync("AdminPassword123!", bcrypt.genSaltSync(10)),
+      isAdmin: true,
+    }).save();
+
+    const normalUser = await new User({
+      username: "user",
+      email: "user@example.com",
+      password: bcrypt.hashSync("UserPassword123!", bcrypt.genSaltSync(10)),
+    }).save();
+
+    const adminToken = jwt.sign(
+      {
+        _id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+        isAdmin: adminUser.isAdmin,
+      },
+      process.env.JWT_SECRET as string
+    );
+
+    const response = await request(app)
+      .delete("/user")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ user_id: normalUser._id?.toString() });
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("User deleted successfully");
+  });
+});
+
 describe("GET /board/", () => {
   beforeEach(async () => {
     await Card.deleteMany({});
