@@ -80,7 +80,7 @@ This project is a Kanban board application built using Node.js for the backend a
 
 ### Running in Development
 
-1. **Change the NODE_ENV variavle in the .env file to _development_**
+1. **Change the NODE_ENV variable in the .env file to _development_**
 
 2. **Start the backend and frontend servers concurrently in development mode**:
     ```sh
