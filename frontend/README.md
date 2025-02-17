@@ -16,23 +16,19 @@ This is the frontend part of the Advanced Web Project. It is built using React, 
 
 ## Prerequisites
 
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js
+- npm
 
 ## Getting Started
 
 1. Install dependencies:
     ```sh
     npm install
-    # or
-    yarn install
     ```
 
 2. Start the development server:
     ```sh
     npm run dev
-    # or
-    yarn dev
     ```
 
 3. Open your browser and navigate to `http://localhost:1234`.
