@@ -217,7 +217,7 @@ The tests are written using Jest and Supertest. The MongoDB database is mocked u
 
 ## Error Handling
 
-Errors are handled using a middleware that checks for validation errors and sends appropriate responses. Validation errors are returned with a 400 status code, and other errors are logged and returned with a 500 status code.
+All errors should be handled gracefully and give proper feedback to the user. 40x and 20x responses are expected. 50x responses are not expected and warrant further investigation.
 
 ## Models
 
