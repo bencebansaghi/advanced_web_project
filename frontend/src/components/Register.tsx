@@ -7,8 +7,10 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const Register = () => {
+  const { t } = useTranslation("register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -19,7 +21,6 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      console.log("is admin: " + isAdmin);
       const response = await fetch("/api/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,21 +52,21 @@ const Register = () => {
       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
       <TextField
-        label="Email"
+        label={t("Email")}
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
       <TextField
-        label="Password"
+        label={t("Password")}
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
       <TextField
-        label="Username"
+        label={t("Username")}
         type="text"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
@@ -78,11 +79,11 @@ const Register = () => {
             onChange={(e) => setIsAdmin(e.target.checked)}
           />
         }
-        label="Register as Admin"
+        label={t("Register as Admin")}
       />
       {isAdmin && (
         <TextField
-          label="Admin Password"
+          label={t("Admin Password")}
           type="password"
           value={adminPass}
           onChange={(e) => setAdminPass(e.target.value)}
@@ -90,7 +91,7 @@ const Register = () => {
         />
       )}
       <Button type="submit" variant="contained">
-        Register
+        {t("Register")}
       </Button>
       {error && <Typography color="error">{error}</Typography>}
     </Box>

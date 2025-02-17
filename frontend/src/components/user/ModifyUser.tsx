@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TextField, Button, Container } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface ModifyUserProps {
   userId?: string;
@@ -10,6 +11,7 @@ const ModifyUser: React.FC<ModifyUserProps> = ({
   userId: initialUserId,
   onModify,
 }) => {
+  const { t } = useTranslation(["admin"]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -52,14 +54,14 @@ const ModifyUser: React.FC<ModifyUserProps> = ({
     <Container maxWidth="sm">
       <form onSubmit={handleSubmit}>
         <TextField
-          label="Username"
+          label={t("Username")}
           fullWidth
           margin="normal"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <TextField
-          label="Password"
+          label={t("Password")}
           type="password"
           fullWidth
           margin="normal"
@@ -67,7 +69,7 @@ const ModifyUser: React.FC<ModifyUserProps> = ({
           onChange={(e) => setPassword(e.target.value)}
         />
         <Button type="submit" variant="contained" color="primary">
-          Modify Information
+          {t("Modify Information")}
         </Button>
       </form>
     </Container>

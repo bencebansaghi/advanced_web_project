@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface DeleteCardProps {
   card_id: string;
@@ -7,6 +8,7 @@ interface DeleteCardProps {
 }
 
 const DeleteCard: React.FC<DeleteCardProps> = ({ card_id, onCardDeleted }) => {
+  const { t } = useTranslation(["button"]);
   const deleteCard = async () => {
     try {
       const token = localStorage.getItem("jwt");
@@ -30,7 +32,7 @@ const DeleteCard: React.FC<DeleteCardProps> = ({ card_id, onCardDeleted }) => {
 
   return (
     <Button variant="contained" color="error" onClick={deleteCard}>
-      Delete
+      {t("Delete")}
     </Button>
   );
 };

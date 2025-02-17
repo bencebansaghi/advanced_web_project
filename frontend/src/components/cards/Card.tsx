@@ -9,6 +9,7 @@ import {
 import ICard from "../../interfaces/Card";
 import DeleteCard from "./DeleteCard";
 import ModifyCard from "./ModifyCard";
+import { useTranslation } from "react-i18next";
 
 interface CardProps {
   card: ICard;
@@ -16,6 +17,7 @@ interface CardProps {
 }
 
 const Card: React.FC<CardProps> = ({ card, onChange }) => {
+  const { t } = useTranslation(["button"]);
   const [modifying, setModifying] = useState<boolean>(false);
 
   return (
@@ -28,10 +30,10 @@ const Card: React.FC<CardProps> = ({ card, onChange }) => {
         <Typography variant="h5">{card.title}</Typography>
         <Typography variant="body2">{card.description}</Typography>
         <Typography variant="body2">
-          Created At: {card.createdAt?.toLocaleString()}
+          {t("Created At")}: {card.createdAt?.toLocaleString()}
         </Typography>
         <Typography variant="body2">
-          Modified At: {card.updatedAt?.toLocaleString()}
+          {t("Modified At")}: {card.updatedAt?.toLocaleString()}
         </Typography>
         {modifying ? (
           <ModifyCard
@@ -44,7 +46,7 @@ const Card: React.FC<CardProps> = ({ card, onChange }) => {
         ) : (
           <Box sx={{ display: "flex", gap: 2 }}>
             <Button variant="outlined" onClick={() => setModifying(true)}>
-              Modify
+              {t("Modify")}
             </Button>
             <DeleteCard card_id={card._id} onCardDeleted={onChange} />
           </Box>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TextField, Button, Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface RenameColumnProps {
   column_id: string;
@@ -10,6 +11,7 @@ const RenameColumn: React.FC<RenameColumnProps> = ({
   column_id,
   onColumnRenamed,
 }) => {
+  const { t } = useTranslation(["button"]);
   const [title, setTitle] = useState<string>("");
 
   const renameColumn = async () => {
@@ -36,13 +38,13 @@ const RenameColumn: React.FC<RenameColumnProps> = ({
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
       <TextField
-        label="Column Title"
+        label={t("Column Title")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter column title"
+        placeholder={t("Enter column title")}
       />
       <Button variant="contained" onClick={renameColumn}>
-        Submit
+        {t("Submit")}
       </Button>
     </Box>
   );

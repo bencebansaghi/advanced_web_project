@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Container } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface DeleteUserProps {
   userId?: string;
@@ -10,6 +11,7 @@ const DeleteUser: React.FC<DeleteUserProps> = ({
   userId: initialUserId,
   onDelete,
 }) => {
+  const { t } = useTranslation(["admin"]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("jwt");
@@ -47,7 +49,7 @@ const DeleteUser: React.FC<DeleteUserProps> = ({
     <Container maxWidth="sm">
       <form onSubmit={handleSubmit}>
         <Button type="submit" variant="contained" color="error">
-          Delete Profile
+          {t("Delete Profile")}
         </Button>
       </form>
     </Container>

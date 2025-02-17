@@ -1,8 +1,13 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
+  const { t, i18n } = useTranslation(["header"]);
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
   const token = localStorage.getItem("jwt");
   let isAdmin = false;
 
@@ -16,7 +21,7 @@ const Header = () => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Boards
+          {t("Kanban board")}
         </Typography>
         {token ? (
           <>
@@ -26,15 +31,15 @@ const Header = () => {
               component={Link}
               to="/boards"
             >
-              Boards
+              {t("Boards")}
             </Button>
             {isAdmin && (
               <Button color="inherit" component={Link} to="/admin">
-                Admin Dashboard
+                {t("Admin Dashboard")}
               </Button>
             )}
             <Button color="inherit" component={Link} to="/profile">
-              Profile
+              {t("Profile")}
             </Button>
             <Button
               variant="contained"
@@ -44,19 +49,25 @@ const Header = () => {
                 window.location.href = "/login";
               }}
             >
-              Logout
+              {t("Logout")}
             </Button>
           </>
         ) : (
           <>
             <Button color="inherit" component={Link} to="/login">
-              Login
+              {t("Login")}
             </Button>
             <Button color="inherit" component={Link} to="/register">
-              Register
+              {t("Register")}
             </Button>
           </>
         )}
+        <Button color="inherit" onClick={() => changeLanguage("cn")}>
+          中文
+        </Button>
+        <Button color="inherit" onClick={() => changeLanguage("en")}>
+          EN
+        </Button>
       </Toolbar>
     </AppBar>
   );

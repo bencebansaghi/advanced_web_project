@@ -15,8 +15,10 @@ import {
 import ICard from "../interfaces/Card";
 import Card from "./cards/Card";
 import AddCard from "./cards/AddCard";
+import { useTranslation } from "react-i18next";
 
 const Board = () => {
+  const { t } = useTranslation(["boards"]);
   const { board_id, board_title } = useParams();
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -223,7 +225,7 @@ const Board = () => {
             {board_title}
           </Typography>
           <Button variant="outlined" component={Link} to="/boards">
-            Back
+            {t("Back")}
           </Button>
         </Box>
         <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
@@ -280,7 +282,7 @@ const Board = () => {
                                 size="small"
                                 onClick={() => setRenamingColumnId(column._id)}
                               >
-                                Rename
+                                {t("Rename")}
                               </Button>
                               <DeleteColumn
                                 column_id={column._id}
@@ -342,7 +344,7 @@ const Board = () => {
                               variant="contained"
                               onClick={() => setAddingCardColumnId(column._id)}
                             >
-                              Add Card
+                              {t("Add Card")}
                             </Button>
                           )}
                         </>
@@ -365,7 +367,7 @@ const Board = () => {
           />
         ) : (
           <Button variant="contained" onClick={() => setShowAddColumn(true)}>
-            Add Column
+            {t("Add Column")}
           </Button>
         )}
       </Box>

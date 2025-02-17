@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Container, Typography, Box } from "@mui/material";
 import ModifyUser from "./ModifyUser";
 import DeleteUser from "./DeleteUser";
+import { useTranslation } from "react-i18next";
 
 const Profile: React.FC = () => {
+  const { t } = useTranslation(["admin"]);
   const [user, setUser] = useState<{
     _id: string;
     email: string;
@@ -44,16 +46,22 @@ const Profile: React.FC = () => {
   if (!user) {
     return <Typography>Loading...</Typography>;
   }
-
+  
   return (
     <Container maxWidth="sm">
       <Typography variant="h4" gutterBottom>
-        Profile
+        {t("Profile")}
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Typography>Email: {user.email}</Typography>
-        <Typography>Username: {user.username}</Typography>
-        <Typography>Admin: {user.isAdmin ? "Yes" : "No"}</Typography>
+        <Typography>
+          {t("Email")}: {user.email}
+        </Typography>
+        <Typography>
+          {t("Username")}: {user.username}
+        </Typography>
+        <Typography>
+          {t("Admin")}: {user.isAdmin ? t("Yes") : t("No")}
+        </Typography>
         <ModifyUser userId={user._id} onModify={handleRefresh} />
         <DeleteUser
           userId={user._id}

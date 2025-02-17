@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Button, Box } from "@mui/material";
 import { SketchPicker } from "react-color";
+import { useTranslation } from "react-i18next";
 
 interface ModifyCardProps {
   card_id: string;
@@ -8,6 +9,7 @@ interface ModifyCardProps {
 }
 
 const ModifyCard: React.FC<ModifyCardProps> = ({ card_id, onChange }) => {
+  const { t } = useTranslation(["button"]);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [color, setColor] = useState<string>("");
@@ -50,26 +52,26 @@ const ModifyCard: React.FC<ModifyCardProps> = ({ card_id, onChange }) => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <TextField
-        label="Card Title"
+        label={t("Card Title")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter card title"
+        placeholder={t("Enter card title")}
       />
       <TextField
-        label="Card Description"
+        label={t("Card Description")}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Enter card description"
+        placeholder={t("Enter card description")}
       />
       <SketchPicker
         color={color}
         onChangeComplete={(color) => setColor(color.hex)}
       />
       <Button variant="contained" onClick={modifyCard}>
-        Submit
+        {t("Submit")}
       </Button>
       <Button variant="contained" onClick={onChange}>
-        Cancel
+        {t("Cancel")}
       </Button>
     </Box>
   );

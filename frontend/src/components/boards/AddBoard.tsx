@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { TextField, Button, Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const AddBoard: React.FC<{ onBoardAdded: () => void }> = ({ onBoardAdded }) => {
+  const { t } = useTranslation(["button"]);
   const [title, setTitle] = useState<string>("");
 
   const postBoard = async () => {
@@ -28,13 +30,13 @@ const AddBoard: React.FC<{ onBoardAdded: () => void }> = ({ onBoardAdded }) => {
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
       <TextField
-        label="Board Title"
+        label={t("Board Title")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter board title"
+        placeholder={t("Enter board title")}
       />
       <Button variant="contained" onClick={postBoard}>
-        Submit
+        {t("Submit")}
       </Button>
     </Box>
   );

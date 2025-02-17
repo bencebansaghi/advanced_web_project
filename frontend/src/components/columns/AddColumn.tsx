@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TextField, Button, Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface AddColumnProps {
   board_id: string;
@@ -7,6 +8,7 @@ interface AddColumnProps {
 }
 
 const AddColumn: React.FC<AddColumnProps> = ({ board_id, onColumnAdded }) => {
+  const { t } = useTranslation(["button"]);
   const [title, setTitle] = useState<string>("");
 
   const postColumn = async () => {
@@ -36,10 +38,10 @@ const AddColumn: React.FC<AddColumnProps> = ({ board_id, onColumnAdded }) => {
         label="Column Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter column title"
+        placeholder={t("Enter column title")}
       />
       <Button variant="contained" onClick={postColumn}>
-        Submit
+        {t("Submit")}
       </Button>
     </Box>
   );

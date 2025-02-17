@@ -5,8 +5,10 @@ import IBoard from "../interfaces/Board";
 import AddBoard from "./boards/AddBoard";
 import DeleteBoard from "./boards/DeleteBoard";
 import RenameBoard from "./boards/RenameBoard";
+import { useTranslation } from "react-i18next";
 
 function Boards() {
+  const { t } = useTranslation(["boards"]);
   const [boards, setBoards] = useState<IBoard[]>([]);
   const [showAddBoard, setShowAddBoard] = useState<boolean>(false);
   const [refresh, setRefresh] = useState<boolean>(false);
@@ -64,7 +66,7 @@ function Boards() {
                     variant="outlined"
                     onClick={() => setRenamingBoardId(board._id)}
                   >
-                    Rename
+                    {t("Rename")}
                   </Button>
                 </>
               )}
@@ -85,7 +87,7 @@ function Boards() {
         />
       ) : (
         <Button variant="contained" onClick={() => setShowAddBoard(true)}>
-          Add Board
+          {t("Add Board")}
         </Button>
       )}
     </Box>

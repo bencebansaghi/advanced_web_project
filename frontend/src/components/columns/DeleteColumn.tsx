@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface DeleteColumnProps {
   column_id: string;
@@ -10,6 +11,7 @@ const DeleteColumn: React.FC<DeleteColumnProps> = ({
   column_id,
   onColumnDeleted,
 }) => {
+  const { t } = useTranslation(["button"]);
   const deleteColumn = async () => {
     try {
       const token = localStorage.getItem("jwt");
@@ -33,7 +35,7 @@ const DeleteColumn: React.FC<DeleteColumnProps> = ({
 
   return (
     <Button variant="contained" color="error" onClick={deleteColumn}>
-      Delete
+      {t("Delete")}
     </Button>
   );
 };

@@ -8,8 +8,10 @@ import {
 } from "@mui/material";
 import DeleteUser from "../user/DeleteUser";
 import ModifyUser from "../user/ModifyUser";
+import { useTranslation } from "react-i18next";
 
 function AdminDashboard() {
+  const { t } = useTranslation(["admin"]);
   const [users, setUsers] = useState<
     {
       _id: string;
@@ -52,7 +54,7 @@ function AdminDashboard() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="h4">Admin Dashboard</Typography>
+      <Typography variant="h4">{t("Admin Dashboard")}</Typography>
       {Array.isArray(users) &&
         users.map((user) => (
           <Box
@@ -61,13 +63,13 @@ function AdminDashboard() {
           >
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
               <Box sx={{ display: "flex", gap: 2 }}>
-                <Typography>Username: {user.username}</Typography>
-                <Typography>Email: {user.email}</Typography>
+                <Typography>{t("Username")}: {user.username}</Typography>
+                <Typography>{t("Email")}: {user.email}</Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 2 }}>
                 <FormControlLabel
                   control={<Checkbox checked={user.isAdmin} />}
-                  label="Admin"
+                  label={t("Admin")}
                   disabled
                 />
                 <Typography>
@@ -83,7 +85,7 @@ function AdminDashboard() {
                 window.location.href = "/boards";
               }}
             >
-              View Boards
+              {t("View Boards")}
             </Button>
             <ModifyUser userId={user._id} onModify={handleRefresh} />
             <DeleteUser userId={user._id} onDelete={handleRefresh} />

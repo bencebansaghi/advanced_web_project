@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
+  const { t } = useTranslation("register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -37,21 +39,21 @@ const Login = () => {
       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
       <TextField
-        label="Email"
+        label={t("Email")}
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
       <TextField
-        label="Password"
+        label={t("Password")}
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
       <Button type="submit" variant="contained">
-        Login
+        {t("Login")}
       </Button>
       {error && <Typography color="error">{error}</Typography>}
     </Box>

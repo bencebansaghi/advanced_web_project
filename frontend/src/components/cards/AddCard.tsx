@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Box } from "@mui/material";
 import { SketchPicker } from "react-color";
+import { useTranslation } from "react-i18next";
 
 interface AddCardProps {
   column_id: string;
@@ -8,6 +9,7 @@ interface AddCardProps {
 }
 
 const AddCard: React.FC<AddCardProps> = ({ column_id, onCardAdded }) => {
+  const { t } = useTranslation(["button"]);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [color, setColor] = useState<string>("#fff");
@@ -39,23 +41,23 @@ const AddCard: React.FC<AddCardProps> = ({ column_id, onCardAdded }) => {
         label="Card Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter card title"
+        placeholder={t("Enter card title")}
       />
       <TextField
         label="Card Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Enter card description"
+        placeholder={t("Enter card description")}
       />
       <SketchPicker
         color={color}
         onChangeComplete={(color) => setColor(color.hex)}
       />
       <Button variant="contained" onClick={postCard}>
-        Submit
+        {t("Submit")}
       </Button>
       <Button variant="contained" onClick={onCardAdded}>
-        Cancel
+        {t("Cancel")}
       </Button>
     </Box>
   );

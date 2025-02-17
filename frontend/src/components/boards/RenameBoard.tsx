@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TextField, Button, Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface RenameBoardProps {
   board_id: string;
@@ -10,6 +11,7 @@ const RenameBoard: React.FC<RenameBoardProps> = ({
   board_id,
   onBoardRenamed,
 }) => {
+  const { t } = useTranslation(["button"]);
   const [title, setTitle] = useState<string>("");
   const renameBoard = async () => {
     try {
@@ -35,13 +37,13 @@ const RenameBoard: React.FC<RenameBoardProps> = ({
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
       <TextField
-        label="Board Title"
+        label={t("Board Title")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Enter board title"
+        placeholder={t("Enter board title")}
       />
       <Button variant="contained" onClick={renameBoard}>
-        Submit
+        {t("Submit")}
       </Button>
     </Box>
   );

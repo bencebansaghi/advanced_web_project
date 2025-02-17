@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface DeleteBoardProps {
   board_id: string;
@@ -10,6 +11,7 @@ const DeleteBoard: React.FC<DeleteBoardProps> = ({
   board_id,
   onBoardDeleted,
 }) => {
+  const { t } = useTranslation(["button"]);
   const deleteBoard = async () => {
     try {
       const token = localStorage.getItem("jwt");
@@ -33,7 +35,7 @@ const DeleteBoard: React.FC<DeleteBoardProps> = ({
 
   return (
     <Button variant="contained" color="error" onClick={deleteBoard}>
-      Delete
+      {t("Delete")}
     </Button>
   );
 };
