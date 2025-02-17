@@ -10,6 +10,6 @@ export const errorHandler = (
   if (!errors.isEmpty()) {
     res.status(400).json({ error: errors.array()[0].msg });
   } else {
-    next();
+    next();[]
   }
 };

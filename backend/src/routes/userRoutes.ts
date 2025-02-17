@@ -50,11 +50,11 @@ userRouter.post(
           res.status(500).json({ error: "Internal server error" });
           return;
         }
-        if (req.body.adminPass==process.env.ADMIN_PASS) {
+        if (req.body.adminPass == process.env.ADMIN_PASS) {
           new_user.isAdmin = true;
         } else {
           res.status(400).json({ error: "Incorrect admin password" });
-          return
+          return;
         }
       }
 
@@ -159,7 +159,10 @@ userRouter.put(
 
       if (req.body.username) user.username = req.body.username;
       if (req.body.password) {
-        user.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10));
+        user.password = bcrypt.hashSync(
+          req.body.password,
+          bcrypt.genSaltSync(10)
+        );
       }
 
       const updatedUser = await user.save();

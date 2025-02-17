@@ -23,7 +23,7 @@ boardRouter.get(
   validateUserToken,
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     if (!req.query.email) {
-      req.body.email=req.user?.email
+      req.body.email = req.user?.email;
     } else req.body.email = req.query.email;
     next();
   },
@@ -75,12 +75,9 @@ boardRouter.delete(
         res.status(404).json({ error: "Board not found" });
         return;
       }
-      res
-        .status(200)
-        .json({
-          message:
-            "Board and associated columns and cards deleted successfully",
-        });
+      res.status(200).json({
+        message: "Board and associated columns and cards deleted successfully",
+      });
     } catch (error) {
       console.error("Error deleting board, columns, and cards:", error);
       res.status(500).json({ error: "Internal server error" });

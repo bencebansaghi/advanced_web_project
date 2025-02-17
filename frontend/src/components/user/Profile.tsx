@@ -4,7 +4,12 @@ import ModifyUser from "./ModifyUser";
 import DeleteUser from "./DeleteUser";
 
 const Profile: React.FC = () => {
-  const [user, setUser] = useState<{ _id: string; email: string; username: string; isAdmin: boolean } | null>(null);
+  const [user, setUser] = useState<{
+    _id: string;
+    email: string;
+    username: string;
+    isAdmin: boolean;
+  } | null>(null);
   const [refresh, setRefresh] = useState<boolean>(false);
 
   useEffect(() => {
@@ -50,7 +55,10 @@ const Profile: React.FC = () => {
         <Typography>Username: {user.username}</Typography>
         <Typography>Admin: {user.isAdmin ? "Yes" : "No"}</Typography>
         <ModifyUser userId={user._id} onModify={handleRefresh} />
-        <DeleteUser userId={user._id} onDelete={() => window.location.href = "/"} />
+        <DeleteUser
+          userId={user._id}
+          onDelete={() => (window.location.href = "/")}
+        />
       </Box>
     </Container>
   );

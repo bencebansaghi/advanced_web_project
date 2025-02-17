@@ -6,7 +6,10 @@ interface DeleteUserProps {
   onDelete?: () => void;
 }
 
-const DeleteUser: React.FC<DeleteUserProps> = ({ userId: initialUserId, onDelete }) => {
+const DeleteUser: React.FC<DeleteUserProps> = ({
+  userId: initialUserId,
+  onDelete,
+}) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("jwt");

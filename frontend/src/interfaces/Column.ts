@@ -4,4 +4,3 @@ export default interface IColumn {
   title: string;
   order: number; // where is it placed
 }
-

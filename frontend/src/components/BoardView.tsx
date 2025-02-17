@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Typography, Button, Box } from '@mui/material';
-import { getColumns } from './columns/getColumns';
-import IColumn from '../interfaces/Column';
-import AddColumn from './columns/AddColumn';
-import DeleteColumn from './columns/DeleteColumn';
-import RenameColumn from './columns/RenameColumn';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import ICard from '../interfaces/Card';
-import Card from './cards/Card';
-import AddCard from './cards/AddCard';
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Typography, Button, Box } from "@mui/material";
+import { getColumns } from "./columns/getColumns";
+import IColumn from "../interfaces/Column";
+import AddColumn from "./columns/AddColumn";
+import DeleteColumn from "./columns/DeleteColumn";
+import RenameColumn from "./columns/RenameColumn";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
+import ICard from "../interfaces/Card";
+import Card from "./cards/Card";
+import AddCard from "./cards/AddCard";
 
 const Board = () => {
   const { board_id, board_title } = useParams();
@@ -19,7 +24,9 @@ const Board = () => {
   const [renamingColumnId, setRenamingColumnId] = useState<string | null>(null);
   const [showAddColumn, setShowAddColumn] = useState<boolean>(false);
   const [cards, setCards] = useState<Record<string, ICard[]>>({});
-  const [addingCardColumnId, setAddingCardColumnId] = useState<string | null>(null);
+  const [addingCardColumnId, setAddingCardColumnId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (board_id) {
@@ -39,22 +46,24 @@ const Board = () => {
       const allCards: Record<string, ICard[]> = {};
       for (const column of columns) {
         try {
-          const token = localStorage.getItem('jwt');
+          const token = localStorage.getItem("jwt");
           const response = await fetch(`/api/card?column_id=${column._id}`, {
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           });
           const data = await response.json();
           if (response.ok) {
             allCards[column._id] = data;
           } else {
-            console.error(`Failed to get cards for column ${column.title}: ${data.error}`);
+            console.error(
+              `Failed to get cards for column ${column.title}: ${data.error}`
+            );
             allCards[column._id] = [];
           }
         } catch (error) {
-          console.error('Failed to get cards:', error);
+          console.error("Failed to get cards:", error);
           allCards[column._id] = [];
         }
       }
@@ -68,7 +77,7 @@ const Board = () => {
 
     if (!destination) return;
 
-    if (type === 'COLUMN') {
+    if (type === "COLUMN") {
       if (source.index === destination.index) return;
 
       const reorderedColumns = Array.from(columns);
@@ -83,14 +92,14 @@ const Board = () => {
       setColumns(updatedColumns);
 
       try {
-        const token = localStorage.getItem('jwt');
+        const token = localStorage.getItem("jwt");
         await Promise.all(
           updatedColumns.map(async (column) => {
-            await fetch('/api/column/modify', {
-              method: 'PUT',
+            await fetch("/api/column/modify", {
+              method: "PUT",
               headers: {
                 Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 column_id: column._id,
@@ -100,24 +109,32 @@ const Board = () => {
           })
         );
       } catch (error) {
-        console.error('Failed to reorder columns:', error);
+        console.error("Failed to reorder columns:", error);
         setRefresh(!refresh); // Revert changes on error
       }
       setRefresh(!refresh);
       return;
     }
 
-    if (type === 'CARD') {
+    if (type === "CARD") {
       const sourceColumnId = source.droppableId;
       const destinationColumnId = destination.droppableId;
 
-      const sourceColumn = columns.find(column => column._id === sourceColumnId);
-      const destinationColumn = columns.find(column => column._id === destinationColumnId);
+      const sourceColumn = columns.find(
+        (column) => column._id === sourceColumnId
+      );
+      const destinationColumn = columns.find(
+        (column) => column._id === destinationColumnId
+      );
 
       if (!sourceColumn || !destinationColumn) return;
 
-      const sourceCards = cards[sourceColumnId] ? Array.from(cards[sourceColumnId]) : [];
-      const destinationCards = cards[destinationColumnId] ? Array.from(cards[destinationColumnId]) : [];
+      const sourceCards = cards[sourceColumnId]
+        ? Array.from(cards[sourceColumnId])
+        : [];
+      const destinationCards = cards[destinationColumnId]
+        ? Array.from(cards[destinationColumnId])
+        : [];
 
       const [movedCard] = sourceCards.splice(source.index, 1);
 
@@ -126,29 +143,32 @@ const Board = () => {
 
         const updatedCards = {
           ...cards,
-          [destinationColumnId]: destinationCards
+          [destinationColumnId]: destinationCards,
         };
         setCards(updatedCards);
 
         try {
-          const token = localStorage.getItem('jwt');
-          await fetch('/api/card/modify', {
-            method: 'PUT',
+          const token = localStorage.getItem("jwt");
+          await fetch("/api/card/modify", {
+            method: "PUT",
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ card_id: movedCard._id, order: destination.index })
+            body: JSON.stringify({
+              card_id: movedCard._id,
+              order: destination.index,
+            }),
           });
         } catch (error) {
-          console.error('Failed to reorder cards within column:', error);
+          console.error("Failed to reorder cards within column:", error);
           setRefresh(!refresh);
         }
         const updatedCardsInColumn = Array.from(cards[sourceColumnId]);
-                updatedCardsInColumn.forEach((card, index) => {
-                  card.order = index;
-                });
-                setCards({ ...cards, [sourceColumnId]: updatedCardsInColumn });
+        updatedCardsInColumn.forEach((card, index) => {
+          card.order = index;
+        });
+        setCards({ ...cards, [sourceColumnId]: updatedCardsInColumn });
       } else {
         movedCard.columnID = destinationColumnId;
         destinationCards.splice(destination.index, 0, movedCard);
@@ -156,22 +176,25 @@ const Board = () => {
         const updatedCards = {
           ...cards,
           [sourceColumnId]: sourceCards,
-          [destinationColumnId]: destinationCards
+          [destinationColumnId]: destinationCards,
         };
         setCards(updatedCards);
 
         try {
-          const token = localStorage.getItem('jwt');
-          await fetch('/api/card/move', {
-            method: 'PUT',
+          const token = localStorage.getItem("jwt");
+          await fetch("/api/card/move", {
+            method: "PUT",
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ card_id: movedCard._id, column_id: destinationColumnId })
+            body: JSON.stringify({
+              card_id: movedCard._id,
+              column_id: destinationColumnId,
+            }),
           });
         } catch (error) {
-          console.error('Failed to move card between columns:', error);
+          console.error("Failed to move card between columns:", error);
           setRefresh(!refresh);
         }
       }
@@ -190,17 +213,34 @@ const Board = () => {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Box>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h3" gutterBottom>{board_title}</Typography>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
+          <Typography variant="h3" gutterBottom>
+            {board_title}
+          </Typography>
           <Button variant="outlined" component={Link} to="/boards">
             Back
           </Button>
         </Box>
         <Droppable droppableId="columns" direction="horizontal" type="COLUMN">
           {(provided) => (
-            <Box display="flex" flexWrap="nowrap" overflow="auto" {...provided.droppableProps} ref={provided.innerRef}>
+            <Box
+              display="flex"
+              flexWrap="nowrap"
+              overflow="auto"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
               {columns.map((column, index) => (
-                <Draggable key={column._id} draggableId={column._id} index={index}>
+                <Draggable
+                  key={column._id}
+                  draggableId={column._id}
+                  index={index}
+                >
                   {(provided) => (
                     <Box
                       ref={provided.innerRef}
@@ -209,10 +249,10 @@ const Board = () => {
                       sx={{
                         width: 300,
                         marginRight: 2,
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        padding: '16px',
-                        backgroundColor: '#f9f9f9',
+                        border: "1px solid #ccc",
+                        borderRadius: "4px",
+                        padding: "16px",
+                        backgroundColor: "#f9f9f9",
                       }}
                     >
                       {renamingColumnId === column._id ? (
@@ -225,43 +265,85 @@ const Board = () => {
                         />
                       ) : (
                         <>
-                          <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                            <Typography variant="h6" sx={{ flexGrow: 1 }}>{column.title}</Typography>
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            mb={1}
+                          >
+                            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                              {column.title}
+                            </Typography>
                             <Box>
-                              <Button variant="outlined" size="small" onClick={() => setRenamingColumnId(column._id)}>Rename</Button>
-                              <DeleteColumn column_id={column._id} onColumnDeleted={() => setRefresh(!refresh)} />
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => setRenamingColumnId(column._id)}
+                              >
+                                Rename
+                              </Button>
+                              <DeleteColumn
+                                column_id={column._id}
+                                onColumnDeleted={() => setRefresh(!refresh)}
+                              />
                             </Box>
                           </Box>
                           <Droppable droppableId={column._id} type="CARD">
                             {(provided) => (
-                                <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ padding: 1, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
-                                {cards[column._id]?.sort((a, b) => a.order - b.order).map((card, index) => (
-                                  <Draggable key={`${card._id}-${index}`} draggableId={card._id} index={index}>
-                                  {(provided) => (
-                                    <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ marginBottom: 1 }}>
-                                    <Card 
-                                      key={`${card._id}-${index}`} 
-                                      card={card} 
-                                      onChange={() => setRefresh(!refresh)} 
-                                    />
-                                    </Box>
-                                  )}
-                                  </Draggable>
-                                ))}
+                              <Box
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                sx={{
+                                  padding: 1,
+                                  backgroundColor: "#f0f0f0",
+                                  borderRadius: 1,
+                                }}
+                              >
+                                {cards[column._id]
+                                  ?.sort((a, b) => a.order - b.order)
+                                  .map((card, index) => (
+                                    <Draggable
+                                      key={`${card._id}-${index}`}
+                                      draggableId={card._id}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <Box
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          sx={{ marginBottom: 1 }}
+                                        >
+                                          <Card
+                                            key={`${card._id}-${index}`}
+                                            card={card}
+                                            onChange={() =>
+                                              setRefresh(!refresh)
+                                            }
+                                          />
+                                        </Box>
+                                      )}
+                                    </Draggable>
+                                  ))}
                                 {provided.placeholder}
-                                </Box>
+                              </Box>
                             )}
                           </Droppable>
                           {addingCardColumnId === column._id ? (
-                            <AddCard 
-                              column_id={column._id} 
+                            <AddCard
+                              column_id={column._id}
                               onCardAdded={() => {
                                 setAddingCardColumnId(null);
                                 setRefresh(!refresh);
-                              }} 
+                              }}
                             />
                           ) : (
-                            <Button variant="contained" onClick={() => setAddingCardColumnId(column._id)}>Add Card</Button>
+                            <Button
+                              variant="contained"
+                              onClick={() => setAddingCardColumnId(column._id)}
+                            >
+                              Add Card
+                            </Button>
                           )}
                         </>
                       )}
@@ -282,7 +364,9 @@ const Board = () => {
             }}
           />
         ) : (
-          <Button variant="contained" onClick={() => setShowAddColumn(true)}>Add Column</Button>
+          <Button variant="contained" onClick={() => setShowAddColumn(true)}>
+            Add Column
+          </Button>
         )}
       </Box>
     </DragDropContext>

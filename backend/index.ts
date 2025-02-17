@@ -7,7 +7,7 @@ mongoose
   .then(() => {
     app.listen(config.port, () => {
       console.log(
-        `Server listening on port ${config.port} in ${config.env} mode`
+        `Server running on port ${config.port} in ${config.env} mode, data is saved to ${config.mongoUri}`
       );
     });
   })

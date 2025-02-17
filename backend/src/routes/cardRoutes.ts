@@ -90,12 +90,12 @@ cardRouter.delete(
         res.status(404).json({ error: "Card not found" });
         return;
       }
-      const cards= await Card.find()
+      const cards = await Card.find();
       cards.forEach((card) => {
-        if (card.order>deletedCard.order){
-          card.order-=1
+        if (card.order > deletedCard.order) {
+          card.order -= 1;
         }
-      })
+      });
       res.status(200).json({ message: "Card deleted successfully" });
     } catch (error) {
       console.error("Error deleting card:", error);
@@ -233,8 +233,8 @@ cardRouter.put(
   async (req: CustomRequest, res: Response) => {
     const { card_id, column_id } = req.body;
     const card = await Card.findById(card_id).catch(() => null);
-    if (!card) return
-    const newColumnLenght = (await Card.find({columnID:column_id})).length
+    if (!card) return;
+    const newColumnLenght = (await Card.find({ columnID: column_id })).length;
 
     try {
       const updatedCard = await Card.findByIdAndUpdate(
@@ -246,15 +246,15 @@ cardRouter.put(
         res.status(404).json({ error: "Card not found" });
         return;
       }
-      const oldColumnCards = await Card.find({columnID:card?.columnID})
+      const oldColumnCards = await Card.find({ columnID: card?.columnID });
       oldColumnCards.forEach(async (oldCard) => {
-        if (oldCard.order>card?.order) {
-          oldCard.order-=1
-          await oldCard.save()
+        if (oldCard.order > card?.order) {
+          oldCard.order -= 1;
+          await oldCard.save();
         }
-      })
-      updatedCard.order=newColumnLenght
-      await updatedCard.save()
+      });
+      updatedCard.order = newColumnLenght;
+      await updatedCard.save();
       res.status(200).json(updatedCard);
     } catch (error) {
       console.error("Error moving card:", error);
@@ -272,11 +272,9 @@ cardRouter.post(
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     const { column_id, title, description, order } = req.body;
     if (!column_id || !title || !description === undefined) {
-      res
-        .status(400)
-        .json({
-          error: "column_id, title, and description are required",
-        });
+      res.status(400).json({
+        error: "column_id, title, and description are required",
+      });
       return;
     }
 
@@ -295,18 +293,18 @@ cardRouter.post(
   async (req: CustomRequest, res: Response) => {
     try {
       const { column_id, title, description, order, color } = req.body;
-      let actualOrder=0
-      if (order===undefined) {
-            const cards = await Card.find({columnID:column_id})
-            cards?actualOrder=cards.length:actualOrder=0
-          } else {
-            actualOrder=order
-          }
+      let actualOrder = 0;
+      if (order === undefined) {
+        const cards = await Card.find({ columnID: column_id });
+        cards ? (actualOrder = cards.length) : (actualOrder = 0);
+      } else {
+        actualOrder = order;
+      }
       const card = new Card({
         columnID: column_id,
         title,
         description,
-        order:actualOrder,
+        order: actualOrder,
       });
 
       let colorWarning = null;

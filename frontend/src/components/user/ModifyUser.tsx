@@ -6,7 +6,10 @@ interface ModifyUserProps {
   onModify?: () => void;
 }
 
-const ModifyUser: React.FC<ModifyUserProps> = ({ userId: initialUserId, onModify }) => {
+const ModifyUser: React.FC<ModifyUserProps> = ({
+  userId: initialUserId,
+  onModify,
+}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 

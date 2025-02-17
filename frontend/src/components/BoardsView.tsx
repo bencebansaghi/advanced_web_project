@@ -1,41 +1,40 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Typography, Button, Box, List, ListItem } from '@mui/material';
-import IBoard from '../interfaces/Board';
-import AddBoard from './boards/AddBoard';
-import DeleteBoard from './boards/DeleteBoard';
-import RenameBoard from './boards/RenameBoard';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Typography, Button, Box, List, ListItem } from "@mui/material";
+import IBoard from "../interfaces/Board";
+import AddBoard from "./boards/AddBoard";
+import DeleteBoard from "./boards/DeleteBoard";
+import RenameBoard from "./boards/RenameBoard";
 
 function Boards() {
-  const [boards, setBoards] = useState<IBoard[]>([])
-  const [showAddBoard, setShowAddBoard] = useState<boolean>(false)
-  const [refresh, setRefresh] = useState<boolean>(false)
-  const [renamingBoardId, setRenamingBoardId] = useState<string | null>(null)
+  const [boards, setBoards] = useState<IBoard[]>([]);
+  const [showAddBoard, setShowAddBoard] = useState<boolean>(false);
+  const [refresh, setRefresh] = useState<boolean>(false);
+  const [renamingBoardId, setRenamingBoardId] = useState<string | null>(null);
 
   const fetchBoards = async () => {
     try {
-      const token = localStorage.getItem('jwt');
-      const email = localStorage.getItem('email');
-      const link=email?`/api/board?email=${email}`:`/api/board`
+      const token = localStorage.getItem("jwt");
+      const email = localStorage.getItem("email");
+      const link = email ? `/api/board?email=${email}` : `/api/board`;
       const response = await fetch(link, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to fetch data: "+data.error)
+        throw new Error("Failed to fetch data: " + data.error);
       }
       setBoards(data);
-
     } catch (error) {
-      console.error('Failed to fetch boards:', error)
+      console.error("Failed to fetch boards:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchBoards()
-  }, [refresh])
+    fetchBoards();
+  }, [refresh]);
 
   return (
     <Box>
@@ -55,13 +54,24 @@ function Boards() {
                 />
               ) : (
                 <>
-                    <Button component={Link} to={`/board/${board._id}/${board.title}`}>
+                  <Button
+                    component={Link}
+                    to={`/board/${board._id}/${board.title}`}
+                  >
                     {board.title}
-                    </Button>
-                  <Button variant="outlined" onClick={() => setRenamingBoardId(board._id)}>Rename</Button>
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setRenamingBoardId(board._id)}
+                  >
+                    Rename
+                  </Button>
                 </>
               )}
-              <DeleteBoard board_id={board._id} onBoardDeleted={() => setRefresh(!refresh)} />
+              <DeleteBoard
+                board_id={board._id}
+                onBoardDeleted={() => setRefresh(!refresh)}
+              />
             </ListItem>
           ))}
         </List>
@@ -74,7 +84,9 @@ function Boards() {
           }}
         />
       ) : (
-        <Button variant="contained" onClick={() => setShowAddBoard(true)}>Add Board</Button>
+        <Button variant="contained" onClick={() => setShowAddBoard(true)}>
+          Add Board
+        </Button>
       )}
     </Box>
   );

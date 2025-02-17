@@ -74,9 +74,7 @@ describe("POST /user/register", () => {
       password: "Password123!",
     });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe(
-      "Please enter a valid email address"
-    );
+    expect(response.body.error).toBe("Please enter a valid email address");
   });
 
   it("should not register a user with a short password", async () => {
@@ -139,7 +137,7 @@ describe("POST /user/register", () => {
   });
 
   it("should register a user as admin with correct admin password", async () => {
-    process.env.ADMIN_PASS = "correctAdminPass"
+    process.env.ADMIN_PASS = "correctAdminPass";
     const response = await request(app).post("/user/register").send({
       username: "adminuser",
       email: "adminuser@example.com",
@@ -334,7 +332,10 @@ describe("PUT /user", () => {
     const response = await request(app)
       .put("/user")
       .set("Authorization", `Bearer ${adminToken}`)
-      .send({ user_id: normalUser._id?.toString(), username: "adminupdateduser" });
+      .send({
+        user_id: normalUser._id?.toString(),
+        username: "adminupdateduser",
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.user.username).toBe("adminupdateduser");
@@ -365,7 +366,10 @@ describe("PUT /user", () => {
     expect(response.status).toBe(200);
 
     const updatedUser = await User.findById(user._id);
-    const isPasswordMatch = bcrypt.compareSync("NewPassword123!", updatedUser?.password || "");
+    const isPasswordMatch = bcrypt.compareSync(
+      "NewPassword123!",
+      updatedUser?.password || ""
+    );
     expect(isPasswordMatch).toBe(true);
   });
 
@@ -391,7 +395,9 @@ describe("PUT /user", () => {
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Either username or password must be provided");
+    expect(response.body.error).toBe(
+      "Either username or password must be provided"
+    );
   });
 });
 
