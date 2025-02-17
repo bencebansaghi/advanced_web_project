@@ -1,6 +1,6 @@
 # advanced_web_project
 
-This project is a Kanban board application built using Node.js for the backend and React for the frontend. It allows users to manage tasks using a visual board with columns representing different stages of the workflow.
+This project is a Kanban board application built using Node.js for the backend and React for the frontend. It allows users to manage tasks using a visual board with columns representing different stages of the workflow. The application is available in both English and Chinese and includes an admin dashboard for managing and accessing all users' information and content. 
 
 ## Table of Contents
 - [advanced\_web\_project](#advanced_web_project)
@@ -108,7 +108,7 @@ To run tests for the backend:
 ## AI Usage during the project
 
 - Gemini for help setting up jest with prod and dev environments
-- Github Copilot Edits for generating documentation such as README files 
+- Github Copilot for generating documentation such as README files 
 - Github Copilot Edits for generating test cases in the backend and working with Materialize UI
 
 I have reviewed all of the code produced by these tools.
