@@ -17,6 +17,7 @@ This project is a Kanban board application built using Node.js for the backend a
     - [Testing](#testing)
   - [Usage](#usage)
   - [AI Usage during the project](#ai-usage-during-the-project)
+  - [Features and Points Table](#features-and-points-table)
 
 ## Features
 
@@ -111,3 +112,22 @@ To run tests for the backend:
 - Github Copilot Edits for generating test cases in the backend and working with Materialize UI
 
 I have reviewed all of the code produced by these tools.
+
+## Features and Points Table
+
+| Feature                                                                 | Points |
+|-------------------------------------------------------------------------|--------|
+| Basic features                                                          | 25     |
+| Usage of React                                                          | 3      |
+| Cards can be reordered with drag and drop                               | 2      |
+| Columns can be reordered with drag and drop                             | 2      |
+| User can set the color of a card                                        | 1      |
+| Admin dashboard for managing and accessing all users' info and content  | 3      |
+| Cards have visible timestamps for creation and updates                  | 3      |
+| Users can create and manage multiple boards                             | 1      |
+| Unit testing (all routes are tested)                                    | 7      |
+| All routes have access verification and error handling                  | 2      |
+| Translation of the entire UI to English and Chinese                     | 2      |
+| Seperate production and development environments                        | 2      |
+| **Total**                                                               | **53** |
+
