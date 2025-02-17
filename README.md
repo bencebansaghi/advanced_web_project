@@ -51,7 +51,7 @@ This project is a Kanban board application built using Node.js for the backend a
 
 1. **Clone the repository**:
     ```sh
-    git clone <repository-url>
+    git clone [<repository-url>](https://github.com/bencebansaghi/advanced_web_project)
     cd advanced_web_project
     ```
 
