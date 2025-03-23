@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "scripts": {
       "preinstall": "cd backend && npm install",
-      "install": "cd frontend && npm install",
+      "install": "npm install concurrently && cd frontend && npm install",
       "test": "npm run test --prefix backend",
       "dev:frontend": "npm run dev --prefix frontend",
       "dev:backend": "npm run dev --prefix backend",
