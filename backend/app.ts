@@ -8,21 +8,6 @@ import compression from "compression";
 
 const app: Express = express();
 
-if (process.env.NODE_ENV === "production") {
-  const clientBuildPath = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "frontend",
-    "dist"
-  );
-
-  app.use(express.static(clientBuildPath));
-
-  app.get("*", (req: Request, res: Response) => {
-    res.sendFile(path.join(clientBuildPath, "index.html"));
-  });
-}
 app.use(
   cors(
     process.env.NODE_ENV === "development"
@@ -43,5 +28,23 @@ app.use(morgan("dev"));
 const apiPrefix = process.env.NODE_ENV === "production" ? "/api" : "";
 
 app.use(apiPrefix + "/", router);
+
+if (process.env.NODE_ENV === "production") {
+  const clientBuildPath = path.resolve(
+    __dirname,
+    "..",
+    "..",
+    "frontend",
+    "dist"
+  );
+
+  app.use(express.static(clientBuildPath));
+
+  app.get("*", (req: Request, res: Response) => {
+    if (!req.path.startsWith("/api")) {
+      res.sendFile(path.join(clientBuildPath, "index.html"));
+    }
+  });
+}
 
 export default app;
